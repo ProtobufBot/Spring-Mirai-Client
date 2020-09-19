@@ -37,3 +37,7 @@ out/
 ### MIRAI ###
 device.json
 src/main/java/onebot/
+
+
+### Mac ###
+.DS_Store
