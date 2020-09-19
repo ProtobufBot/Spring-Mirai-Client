@@ -8,6 +8,8 @@ import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.message.FriendMessageEvent
 import net.mamoe.mirai.message.GroupMessageEvent
+import net.mamoe.mirai.message.data.id
+import onebot.OnebotEvent
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
@@ -38,8 +40,13 @@ class BotService {
         bot.subscribeAlways<BotOfflineEvent> {
             botMap[bot.id]?.status = BotStatus.OFFLINE
         }
-        bot.subscribeAlways<GroupMessageEvent> {
-            bot.logger.info("群 ${it.group.id} 消息 ${it.message}")
+        bot.subscribeAlways<GroupMessageEvent> { event ->
+            bot.logger.info("群 ${event.group.id} 消息 ${event.message}")
+            val onebotEvent = OnebotEvent.GroupMessageEvent.newBuilder()
+                    .setGroupId(event.group.id)
+                    .setUserId(event.sender.id)
+                    .setMessageId(message.id)
+                    .build()
         }
         bot.subscribeAlways<FriendMessageEvent> {
             bot.logger.info("好友 ${it.friend.id} 消息 ${it.message}")
