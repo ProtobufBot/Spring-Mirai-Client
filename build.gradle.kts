@@ -42,6 +42,7 @@ repositories {
 
 dependencies {
     implementation("net.mamoe:mirai-core-qqandroid:1.3.0")
+    implementation("com.squareup.okhttp3:okhttp:4.8.0")
     implementation("com.google.protobuf:protobuf-java:3.12.2")
     implementation("com.google.protobuf:protobuf-java-util:3.12.2")
 

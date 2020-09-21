@@ -3,7 +3,7 @@ package net.lz1998.mirai.controller
 import kotlinx.coroutines.runBlocking
 import net.lz1998.mirai.service.BotService
 import net.lz1998.mirai.service.LoginDataType
-import net.lz1998.mirai.service.LoginService
+import net.lz1998.mirai.service.myLoginSolver
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.RequestMapping
@@ -14,9 +14,6 @@ class BotController {
 
     @Autowired
     lateinit var botService: BotService
-
-    @Autowired
-    lateinit var loginService: LoginService
 
 
     @RequestMapping("/createBot")
@@ -32,7 +29,7 @@ class BotController {
     // 通过轮询获取登陆验证url
     @RequestMapping("/getLoginUrl")
     fun getLoginUrl(botId: Long): String? {
-        val loginData = loginService.getLoginData(botId) ?: return null
+        val loginData = myLoginSolver.getLoginData(botId) ?: return null
         return if (loginData.type == LoginDataType.PIC_CAPTCHA) {
             loginData.url
         } else {
@@ -43,7 +40,7 @@ class BotController {
     // 通过轮询获取登陆图片验证码
     @RequestMapping("/getLoginImage", produces = [MediaType.IMAGE_JPEG_VALUE])
     fun getLoginData(botId: Long): ByteArray? {
-        val loginData = loginService.getLoginData(botId) ?: return null
+        val loginData = myLoginSolver.getLoginData(botId) ?: return null
         return if (loginData.type == LoginDataType.PIC_CAPTCHA) {
             loginData.data
         } else {
@@ -54,7 +51,7 @@ class BotController {
     // 处理登陆
     @RequestMapping("/solveLogin")
     fun solveLogin(botId: Long, result: String): String {
-        loginService.solveLogin(botId, result)
+        myLoginSolver.solveLogin(botId, result)
         return "ok"
     }
 }

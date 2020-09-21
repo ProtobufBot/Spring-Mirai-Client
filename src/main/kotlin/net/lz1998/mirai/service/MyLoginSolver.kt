@@ -6,7 +6,7 @@ import net.mamoe.mirai.utils.LoginSolver
 import org.springframework.stereotype.Service
 
 @Service
-class LoginService : LoginSolver() {
+class MyLoginSolver : LoginSolver() {
     // TODO 通过轮询查询 loginMap
     val loginMap = mutableMapOf<Long, LoginData>()
 
@@ -49,3 +49,5 @@ enum class LoginDataType(val type: String) {
     SLIDER_CAPTCHA("slider_captcha"),
     UNSAFE_DEVICE_LOGIN_VERIFY("unsafe_device_login)verify"),
 }
+
+val myLoginSolver = MyLoginSolver()

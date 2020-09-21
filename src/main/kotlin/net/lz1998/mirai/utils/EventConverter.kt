@@ -4,22 +4,18 @@ import com.google.protobuf.Message
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.message.data.*
-import onebot.OnebotBase
 import onebot.OnebotEvent
+import onebot.OnebotFrame
 
-fun BotEvent.toProtoMessage(): Message {
-    return when (this) {
-        is GroupMessageEvent -> this.toProtoMessage()
-        is FriendMessageEvent -> this.toProtoMessage()
-        is MemberJoinEvent -> this.toProtoMessage()
-        is MemberLeaveEvent -> this.toProtoMessage()
-        is MemberMuteEvent -> this.toProtoMessage()
-        is MemberUnmuteEvent -> this.toProtoMessage()
-        else -> OnebotEvent.BaseEvent.newBuilder().setTime(System.currentTimeMillis()).setSelfId(this.bot.id).setPostType("UNKNOWN").build()
-    }
+fun BotEvent.toFrame(): Message? = when (this) {
+    is GroupMessageEvent -> this.toProtoMessage().toProtoFrame(this.bot.id)
+    is FriendMessageEvent -> this.toProtoMessage().toProtoFrame(this.bot.id)
+    is MemberJoinEvent -> this.toProtoMessage().toProtoFrame(this.bot.id)
+    is MemberLeaveEvent -> this.toProtoMessage().toProtoFrame(this.bot.id)
+    else -> null
 }
 
-fun GroupMessageEvent.toProtoMessage(): Message {
+fun GroupMessageEvent.toProtoMessage(): OnebotEvent.GroupMessageEvent {
     val sender = OnebotEvent.GroupMessageEvent.Sender.newBuilder()
             .setUserId(this.sender.id)
             .setNickname(this.sender.nick)
@@ -49,7 +45,7 @@ fun GroupMessageEvent.toProtoMessage(): Message {
             .build()
 }
 
-fun FriendMessageEvent.toProtoMessage(): Message {
+fun FriendMessageEvent.toProtoMessage(): OnebotEvent.PrivateMessageEvent {
     val sender = OnebotEvent.PrivateMessageEvent.Sender.newBuilder()
             .setUserId(this.sender.id)
             .setNickname(this.sender.nick)
@@ -75,18 +71,24 @@ fun FriendMessageEvent.toProtoMessage(): Message {
             .build()
 }
 
-fun MemberJoinEvent.toProtoMessage(): Message {
+fun MemberJoinEvent.toProtoMessage(): OnebotEvent.GroupIncreaseNoticeEvent {
+    val subType = when (this) {
+        is MemberJoinEvent.Invite -> "invite"
+        is MemberJoinEvent.Active -> "approve"
+        is MemberJoinEvent.Retrieve -> "retrieve"
+    }
     return OnebotEvent.GroupIncreaseNoticeEvent.newBuilder()
             .setTime(System.currentTimeMillis())
             .setSelfId(bot.id)
             .setPostType("notice")
             .setNoticeType("group_increase")
+            .setSubType(subType)
             .setGroupId(this.group.id)
             .setUserId(this.member.id)
             .build()
 }
 
-fun MemberLeaveEvent.toProtoMessage(): Message {
+fun MemberLeaveEvent.toProtoMessage(): OnebotEvent.GroupDecreaseNoticeEvent {
     val operatorId: Long
     val subType = when (this) {
         is MemberLeaveEvent.Kick -> {
@@ -110,29 +112,10 @@ fun MemberLeaveEvent.toProtoMessage(): Message {
             .build()
 }
 
-fun MemberMuteEvent.toProtoMessage(): Message {
+fun OnebotEvent.GroupMessageEvent.toProtoFrame(botId: Long): OnebotFrame.Frame = OnebotFrame.Frame.newBuilder().setBotId(botId).setMessageType(OnebotFrame.Frame.MessageType.GroupMessageEvent).setGroupMessageEvent(this).build()
+fun OnebotEvent.PrivateMessageEvent.toProtoFrame(botId: Long): OnebotFrame.Frame = OnebotFrame.Frame.newBuilder().setBotId(botId).setMessageType(OnebotFrame.Frame.MessageType.PrivateMessageEvent).setPrivateMessageEvent(this).build()
+fun OnebotEvent.GroupIncreaseNoticeEvent.toProtoFrame(botId: Long): OnebotFrame.Frame = OnebotFrame.Frame.newBuilder().setBotId(botId).setMessageType(OnebotFrame.Frame.MessageType.GroupIncreaseNoticeEvent).setGroupIncreaseNoticeEvent(this).build()
+fun OnebotEvent.GroupDecreaseNoticeEvent.toProtoFrame(botId: Long): OnebotFrame.Frame = OnebotFrame.Frame.newBuilder().setBotId(botId).setMessageType(OnebotFrame.Frame.MessageType.GroupDecreaseNoticeEvent).setGroupDecreaseNoticeEvent(this).build()
 
-}
 
-fun MemberUnmuteEvent.toProtoMessage(): Message {
 
-}
-
-fun MessageChain.toRawMessage(): String {
-    var rawMessage = ""
-    this.forEachContent { rawMessage += it.contentToString() }
-    return rawMessage
-}
-
-fun MessageChain.toOnebotMessage(): List<OnebotBase.Message> {
-    val messageChain = mutableListOf<OnebotBase.Message>()
-    this.forEachContent { content ->
-        val message = when (content) {
-            is At -> OnebotBase.Message.newBuilder().setType("at").putAllData(mapOf("qq" to content.target.toString())).build()
-            is PlainText -> OnebotBase.Message.newBuilder().setType("text").putAllData(mapOf("text" to content.content)).build()
-            else -> OnebotBase.Message.newBuilder().setType("unknown").build()
-        }
-        messageChain.add(message)
-    }
-    return messageChain
-}
