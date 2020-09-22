@@ -9,6 +9,7 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.uploadAsImage
 import onebot.OnebotBase
 import java.io.File
+import java.net.URL
 
 val MSG_EMPTY = PlainText("")
 
@@ -19,7 +20,7 @@ suspend fun OnebotBase.Message.toMiraiMessage(bot: Bot, contact: Contact): Messa
         "image" -> {
             return try {
                 withContext(Dispatchers.IO) {
-                    File(dataMap["file"] ?: "").uploadAsImage(contact)
+                    URL(dataMap["file"]?:"").openConnection().getInputStream().uploadAsImage(contact)
                 }
             } catch (e: Exception) {
                 MSG_EMPTY
