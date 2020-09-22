@@ -1,7 +1,0 @@
-syntax = "proto3";
-package onebot;
-
-message Message{
-  string type = 1;
-  map<string, string> data = 2;
-}

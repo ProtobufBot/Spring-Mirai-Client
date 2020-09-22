@@ -157,6 +157,7 @@ class WebsocketBotClient(override var botId: Long, override var password: String
             OnebotFrame.Frame.MessageType.GetVersionInfoReq -> req.getVersionInfoReq
             OnebotFrame.Frame.MessageType.SetRestartReq -> req.setRestartReq
             OnebotFrame.Frame.MessageType.CleanCacheReq -> req.cleanCacheReq
+
             OnebotFrame.Frame.MessageType.SendPrivateMsgResp -> req.sendPrivateMsgResp
             OnebotFrame.Frame.MessageType.SendGroupMsgResp -> req.sendGroupMsgResp
             OnebotFrame.Frame.MessageType.SendMsgResp -> req.sendMsgResp
@@ -200,7 +201,7 @@ class WebsocketBotClient(override var botId: Long, override var password: String
         val apiResp = apiReq?.let { handleApiCall(bot, it) }
         val respFrameBuilder = OnebotFrame.Frame.newBuilder()
         respFrameBuilder.echo = req.echo
-        respFrameBuilder.messageType = req.messageType
+        respFrameBuilder.botId = botId
         when (apiResp) {
             is OnebotApi.SendPrivateMsgResp -> respFrameBuilder.sendPrivateMsgResp = apiResp
             is OnebotApi.SendGroupMsgResp -> respFrameBuilder.sendGroupMsgResp = apiResp
@@ -245,13 +246,14 @@ class WebsocketBotClient(override var botId: Long, override var password: String
     }
 
     override fun onBotEvent(botEvent: BotEvent) {
-        val eventFrame = botEvent.toFrame()
+        val eventFrame = botEvent.toFrame() ?: return
         // TODO 写二进制还是json？配置
         val eventStr = jsonFormatPrinter.print(eventFrame)
         val ok = wsClient.send(eventStr)
         if (!ok) {
             wsConnect()
         }
+
     }
 
 }
