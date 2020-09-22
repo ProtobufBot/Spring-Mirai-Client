@@ -65,8 +65,8 @@ dependencies {
 }
 
 protobuf {
-    generatedFilesBaseDir = "$projectDir/src/main/java"
-    println("$generatedFilesBaseDir")
+    generatedFilesBaseDir = "$projectDir/src"
+    println(generatedFilesBaseDir)
     protoc { artifact = "com.google.protobuf:protoc:3.7.0" }
 }
 sourceSets {
