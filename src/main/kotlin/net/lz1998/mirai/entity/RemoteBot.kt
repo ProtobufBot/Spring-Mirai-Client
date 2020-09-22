@@ -17,7 +17,7 @@ interface RemoteBot {
     suspend fun initBot() {
         bot = Bot(botId, password) {
             fileBasedDeviceInfo("device.json")
-            loginSolver = myLoginSolver
+//            loginSolver = myLoginSolver
             noNetworkLog()
         }.alsoLogin()
         bot.subscribeAlways<BotEvent> {
