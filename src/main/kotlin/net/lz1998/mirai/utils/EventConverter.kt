@@ -1,13 +1,12 @@
 package net.lz1998.mirai.utils
 
-import com.google.protobuf.Message
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.message.data.*
 import onebot.OnebotEvent
 import onebot.OnebotFrame
 
-fun BotEvent.toFrame(): Message? = when (this) {
+fun BotEvent.toFrame(): OnebotFrame.Frame? = when (this) {
     is GroupMessageEvent -> this.toProtoMessage().toProtoFrame(this.bot.id)
     is FriendMessageEvent -> this.toProtoMessage().toProtoFrame(this.bot.id)
     is MemberJoinEvent -> this.toProtoMessage().toProtoFrame(this.bot.id)

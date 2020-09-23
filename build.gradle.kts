@@ -41,16 +41,14 @@ repositories {
     maven(url = "http://maven.aliyun.com/nexus/content/repositories/jcenter")
     mavenCentral()
     jcenter()
-    maven(url = "http://repo.spring.io/plugins-release")
+//    maven(url = "http://repo.spring.io/plugins-release")
     maven(url = "https://plugins.gradle.org/m2/")
 }
 
 dependencies {
     implementation("net.mamoe:mirai-core-qqandroid:1.3.0")
     implementation("com.squareup.okhttp3:okhttp:4.8.0")
-    implementation("com.google.protobuf:protobuf-java:3.12.2")
-//    implementation("com.google.protobuf:protobuf-javalite:3.8.0")
-    implementation("com.google.protobuf:protobuf-java-util:3.12.2")
+    implementation("com.google.protobuf:protobuf-javalite:3.8.0")
 
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
@@ -67,7 +65,20 @@ dependencies {
 protobuf {
     generatedFilesBaseDir = "$projectDir/src"
     println(generatedFilesBaseDir)
-    protoc { artifact = "com.google.protobuf:protoc:3.7.0" }
+    protoc {
+        // You still need protoc like in the non-Android case
+        artifact = "com.google.protobuf:protoc:3.8.0"
+    }
+    generateProtoTasks {
+        all().forEach {
+            it.builtins{
+                remove("java")
+                id("java"){
+                    option("lite")
+                }
+            }
+        }
+    }
 }
 sourceSets {
     main {
