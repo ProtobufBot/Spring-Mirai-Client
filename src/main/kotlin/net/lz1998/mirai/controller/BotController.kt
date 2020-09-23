@@ -1,5 +1,7 @@
 package net.lz1998.mirai.controller
 
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.lz1998.mirai.service.BotService
 import net.lz1998.mirai.service.LoginDataType
@@ -16,14 +18,40 @@ class BotController {
     lateinit var botService: BotService
 
 
+    // 创建一个机器人并登陆
     @RequestMapping("/createBot")
     fun createBot(botId: Long, password: String): String {
-        println(botId)
-        println(password)
-        runBlocking { // TODO 是否可以优化？ suspend报错怎么解决？
-            botService.createBot(botId, password)
+        GlobalScope.launch { // TODO 是否可以优化？ suspend报错怎么解决？
+            val bot = botService.botMap[botId]
+            if (bot != null) { // 机器人已存在，直接登陆
+                bot.bot.login()
+                return@launch
+            } else { // 机器人不存在，创建
+                botService.createBot(botId, password)
+            }
         }
         return "ok"
+    }
+
+    // 获取机器人状态
+    @RequestMapping("/getStatus")
+    fun getStatus(botId: Long): String {
+        // 机器人不存在
+        val bot = botService.botMap[botId] ?: return "NOT_CREATED"
+
+        // 机器人在线
+        if (bot.bot.isOnline) {
+            return "ONLINE"
+        }
+
+        // 机器人需要登陆
+        val loginData = myLoginSolver.getLoginData(botId)
+        if (loginData != null) {
+            return loginData.type.name // 登陆类型
+        }
+
+        // 其他状态
+        return "UNKNOWN"
     }
 
     // 通过轮询获取登陆验证url
