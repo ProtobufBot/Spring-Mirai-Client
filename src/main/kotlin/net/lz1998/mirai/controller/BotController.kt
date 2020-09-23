@@ -30,7 +30,7 @@ class BotController {
     @RequestMapping("/getLoginUrl")
     fun getLoginUrl(botId: Long): String? {
         val loginData = myLoginSolver.getLoginData(botId) ?: return null
-        return if (loginData.type == LoginDataType.PIC_CAPTCHA) {
+        return if (loginData.type != LoginDataType.PIC_CAPTCHA) {
             loginData.url
         } else {
             null

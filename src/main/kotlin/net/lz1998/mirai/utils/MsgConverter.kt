@@ -20,7 +20,7 @@ suspend fun OnebotBase.Message.toMiraiMessage(bot: Bot, contact: Contact): Messa
         "image" -> {
             return try {
                 withContext(Dispatchers.IO) {
-                    URL(dataMap["file"]?:"").openConnection().getInputStream().uploadAsImage(contact)
+                    URL(dataMap["file"] ?: "").openConnection().getInputStream().uploadAsImage(contact)
                 }
             } catch (e: Exception) {
                 MSG_EMPTY
@@ -45,6 +45,9 @@ fun MessageChain.toOnebotMessage(): List<OnebotBase.Message> {
         val message = when (content) {
             is At -> OnebotBase.Message.newBuilder().setType("at").putAllData(mapOf("qq" to content.target.toString())).build()
             is PlainText -> OnebotBase.Message.newBuilder().setType("text").putAllData(mapOf("text" to content.content)).build()
+            is Face -> OnebotBase.Message.newBuilder().setType("face").putAllData(mapOf("id" to content.id.toString())).build()
+            is Image -> OnebotBase.Message.newBuilder().setType("image").putAllData(mapOf("file" to content.imageId)).build()
+            is Voice -> OnebotBase.Message.newBuilder().setType("record").putAllData(mapOf("file" to content.fileName)).build()
             else -> OnebotBase.Message.newBuilder().setType("unknown").build()
         }
         messageChain.add(message)
