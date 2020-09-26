@@ -5,10 +5,11 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.lz1998.mirai.ext.messageSourceLru
-import net.lz1998.mirai.service.myLoginSolver
+import net.lz1998.mirai.service.MyLoginSolver
 import net.lz1998.mirai.utils.*
 import net.lz1998.mirai.utils.toFrame
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.message.MessageEvent
@@ -88,13 +89,13 @@ class WebsocketBotClient(override var botId: Long, override var password: String
     }
 
 
-    override fun initBot() {
+    override suspend fun initBot() {
         wsClient = httpClient.newWebSocket(wsRequest, wsListener)
         bot = Bot(botId, password) {
             fileBasedDeviceInfo("device.json")
-            loginSolver = myLoginSolver
+            loginSolver = MyLoginSolver
             noNetworkLog()
-        }
+        }.alsoLogin()
         bot.subscribeAlways<BotEvent> {
             onBotEvent(this)
         }

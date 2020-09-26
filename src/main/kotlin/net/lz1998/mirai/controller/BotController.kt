@@ -15,14 +15,11 @@ class BotController {
     @Autowired
     lateinit var botService: BotService
 
-    @Autowired
-    lateinit var myLoginSolver: MyLoginSolver
-
 
     // 创建一个机器人并登陆
     @RequestMapping("/create/v1", produces = ["application/x-protobuf"], consumes = ["application/x-protobuf"])
     fun createBot(@RequestBody param: HttpDto.CreateBotReq): HttpDto.CreateBotResp {
-        botService.createBot(param.botId, param.password)
+        GlobalScope.launch { botService.createBot(param.botId, param.password) }
         return HttpDto.CreateBotResp.newBuilder().build()
     }
 

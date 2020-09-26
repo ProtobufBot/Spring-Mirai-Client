@@ -9,7 +9,7 @@ import okio.ByteString.Companion.toByteString
 import org.springframework.stereotype.Service
 
 @Service
-class MyLoginSolver : LoginSolver() {
+object MyLoginSolver : LoginSolver() {
     // TODO 通过轮询查询 loginMap
     val loginMap = mutableMapOf<Long, LoginData>()
 
@@ -34,12 +34,14 @@ class MyLoginSolver : LoginSolver() {
         val def = CompletableDeferred<String>()
         val loginData = LoginData(bot.id, LoginDataType.UNSAFE_DEVICE_LOGIN_VERIFY, def, null, url)
         loginMap[bot.id] = loginData
+        println(loginMap.toString())
         return def.await().trim()
     }
 
     fun solveLogin(botId: Long, result: String) {
         val loginData = loginMap[botId] ?: return
         loginData.def.complete(result)
+        loginMap.remove(botId)
     }
 
     fun getCaptchaList(): Collection<HttpDto.Captcha> {
@@ -79,4 +81,4 @@ enum class LoginDataType(val type: String) {
     UNSAFE_DEVICE_LOGIN_VERIFY("unsafe_device_login_verify"),
 }
 
-val myLoginSolver = MyLoginSolver()
+//val myLoginSolver = MyLoginSolver()

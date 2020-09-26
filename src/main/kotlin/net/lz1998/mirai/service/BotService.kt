@@ -10,12 +10,12 @@ class BotService {
     val botMap = mutableMapOf<Long, RemoteBot>()
 
     @Synchronized
-    fun createBot(botId: Long, password: String) {
+    suspend fun createBot(botId: Long, password: String) {
         var bot = botMap[botId]
         if (bot == null) {
             bot = WebsocketBotClient(botId, password, "ws://127.0.0.1:8081/ws/cq/")
-            bot.initBot()
             botMap[botId] = bot
+            bot.initBot()
         }
     }
 
