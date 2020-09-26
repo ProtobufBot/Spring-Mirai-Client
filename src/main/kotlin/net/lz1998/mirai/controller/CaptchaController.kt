@@ -15,7 +15,7 @@ class CaptchaController {
     lateinit var myLoginSolver: MyLoginSolver
 
     @RequestMapping("/list/v1", produces = ["application/x-protobuf"], consumes = ["application/x-protobuf"])
-    fun getCaptchaList(@RequestBody param: HttpDto.GetCaptchaListReq): HttpDto.GetCaptchaListResp {
+    fun getCaptchaList(): HttpDto.GetCaptchaListResp {
         val captchaList = myLoginSolver.getCaptchaList()
         return HttpDto.GetCaptchaListResp.newBuilder().addAllCaptchaList(captchaList).build()
     }

@@ -4,6 +4,7 @@ import dto.HttpDto
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.lz1998.mirai.service.BotService
+import net.lz1998.mirai.service.MyLoginSolver
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 
@@ -14,6 +15,9 @@ class BotController {
     @Autowired
     lateinit var botService: BotService
 
+    @Autowired
+    lateinit var myLoginSolver: MyLoginSolver
+
 
     // 创建一个机器人并登陆
     @RequestMapping("/create/v1", produces = ["application/x-protobuf"], consumes = ["application/x-protobuf"])
@@ -23,7 +27,7 @@ class BotController {
     }
 
     @RequestMapping("/list/v1", produces = ["application/x-protobuf"], consumes = ["application/x-protobuf"])
-    fun listBot(@RequestBody param: HttpDto.ListBotReq): HttpDto.ListBotResp {
+    fun listBot(): HttpDto.ListBotResp {
         val botList = botService.listBot()
         return HttpDto.ListBotResp.newBuilder().addAllBotList(botList).build()
     }

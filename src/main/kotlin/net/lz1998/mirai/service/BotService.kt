@@ -21,7 +21,13 @@ class BotService {
 
     fun listBot(): Collection<HttpDto.Bot> {
         return botMap.values.map { remoteBot ->
-            HttpDto.Bot.newBuilder().setBotId(remoteBot.botId).setIsOnline(remoteBot.bot.isOnline).build()
+            HttpDto.Bot.newBuilder().setBotId(remoteBot.botId).setIsOnline(
+                    try {
+                        remoteBot.bot.isOnline
+                    } catch (e: Exception) {
+                        false
+                    }
+            ).build()
         }
     }
 

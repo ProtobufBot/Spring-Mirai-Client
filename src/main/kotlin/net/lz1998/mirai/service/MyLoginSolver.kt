@@ -16,32 +16,30 @@ class MyLoginSolver : LoginSolver() {
     // 图片验证码登陆
     override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String? {
         val def = CompletableDeferred<String>()
-        loginMap[bot.id] = LoginData(bot.id, LoginDataType.PIC_CAPTCHA, def, data, null)
+        val loginData = LoginData(bot.id, LoginDataType.PIC_CAPTCHA, def, data, null)
+        loginMap[bot.id] = loginData
         return def.await().trim()
     }
 
     // 滑动验证
     override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String? {
         val def = CompletableDeferred<String>()
-        loginMap[bot.id] = LoginData(bot.id, LoginDataType.SLIDER_CAPTCHA, def, null, url)
+        val loginData = LoginData(bot.id, LoginDataType.SLIDER_CAPTCHA, def, null, url)
+        loginMap[bot.id] = loginData
         return def.await().trim()
     }
 
     // 设备锁扫码验证
     override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String? {
         val def = CompletableDeferred<String>()
-        loginMap[bot.id] = LoginData(bot.id, LoginDataType.UNSAFE_DEVICE_LOGIN_VERIFY, def, null, url)
+        val loginData = LoginData(bot.id, LoginDataType.UNSAFE_DEVICE_LOGIN_VERIFY, def, null, url)
+        loginMap[bot.id] = loginData
         return def.await().trim()
     }
 
     fun solveLogin(botId: Long, result: String) {
         val loginData = loginMap[botId] ?: return
-        loginMap.remove(botId)
         loginData.def.complete(result)
-    }
-
-    fun getLoginData(botId: Long): LoginData? {
-        return loginMap[botId]
     }
 
     fun getCaptchaList(): Collection<HttpDto.Captcha> {
@@ -78,7 +76,7 @@ data class LoginData(
 enum class LoginDataType(val type: String) {
     PIC_CAPTCHA("pic_captcha"),
     SLIDER_CAPTCHA("slider_captcha"),
-    UNSAFE_DEVICE_LOGIN_VERIFY("unsafe_device_login)verify"),
+    UNSAFE_DEVICE_LOGIN_VERIFY("unsafe_device_login_verify"),
 }
 
 val myLoginSolver = MyLoginSolver()
