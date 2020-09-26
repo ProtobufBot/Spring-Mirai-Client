@@ -48,7 +48,12 @@ repositories {
 dependencies {
     implementation("net.mamoe:mirai-core-qqandroid:1.3.0")
     implementation("com.squareup.okhttp3:okhttp:4.8.0")
-    implementation("com.google.protobuf:protobuf-javalite:3.8.0")
+//    implementation("com.google.protobuf:protobuf-javalite:3.8.0")
+
+    implementation("com.google.protobuf:protobuf-java:3.12.2")
+    implementation("com.googlecode.protobuf-java-format:protobuf-java-format:1.4")
+    implementation("com.google.protobuf:protobuf-java-util:3.12.2")
+//    implementation("com.googlecode.protobuf:protobuf-java-format:1.2")
 
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
@@ -72,10 +77,10 @@ protobuf {
     generateProtoTasks {
         all().forEach {
             it.builtins{
-                remove("java")
-                id("java"){
-                    option("lite")
-                }
+//                remove("java")
+//                id("java"){
+//                    option("lite")
+//                }
             }
         }
     }

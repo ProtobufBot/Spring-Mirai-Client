@@ -14,20 +14,9 @@ interface RemoteBot {
     var botId: Long
     var password: String
 
-    suspend fun initBot() {
-        bot = Bot(botId, password) {
-            fileBasedDeviceInfo("device.json")
-            loginSolver = myLoginSolver
-            noNetworkLog()
-        }.alsoLogin()
-        bot.subscribeAlways<BotEvent> {
-            onBotEvent(this)
-        }
-        bot.subscribeAlways<MessageEvent> {
-            val messageSource = this.source // 撤回消息用
-            bot.messageSourceLru.put(messageSource.id, messageSource)
-        }
-    }
+    fun initBot()
+
+    suspend fun login()
 
     // 执行并返回结果
     suspend fun onRemoteApi(req: OnebotFrame.Frame): OnebotFrame.Frame

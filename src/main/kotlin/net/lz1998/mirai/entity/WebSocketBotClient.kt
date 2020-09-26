@@ -4,10 +4,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import net.lz1998.mirai.ext.messageSourceLru
+import net.lz1998.mirai.service.myLoginSolver
 import net.lz1998.mirai.utils.*
 import net.lz1998.mirai.utils.toFrame
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.BotEvent
+import net.mamoe.mirai.event.subscribeAlways
+import net.mamoe.mirai.message.MessageEvent
 import okhttp3.*
 import okio.ByteString
 import okio.ByteString.Companion.toByteString
@@ -84,9 +88,24 @@ class WebsocketBotClient(override var botId: Long, override var password: String
     }
 
 
-    override suspend fun initBot() {
+    override fun initBot() {
         wsClient = httpClient.newWebSocket(wsRequest, wsListener)
-        super.initBot()
+        bot = Bot(botId, password) {
+            fileBasedDeviceInfo("device.json")
+            loginSolver = myLoginSolver
+            noNetworkLog()
+        }
+        bot.subscribeAlways<BotEvent> {
+            onBotEvent(this)
+        }
+        bot.subscribeAlways<MessageEvent> {
+            val messageSource = this.source // 撤回消息用
+            bot.messageSourceLru.put(messageSource.id, messageSource)
+        }
+    }
+
+    override suspend fun login() {
+        bot.login()
     }
 
     override suspend fun onRemoteApi(req: OnebotFrame.Frame): OnebotFrame.Frame {
@@ -122,7 +141,6 @@ class WebsocketBotClient(override var botId: Long, override var password: String
         if (!ok) {
             wsConnect()
         }
-
     }
 
 }

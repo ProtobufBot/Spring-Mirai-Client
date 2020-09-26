@@ -37,6 +37,7 @@ out/
 ### MIRAI ###
 device.json
 src/main/java/onebot/
+src/main/java/dto/
 
 
 ### Mac ###
