@@ -17,17 +17,22 @@ suspend fun OnebotBase.Message.toMiraiMessage(bot: Bot, contact: Contact): Messa
     return when (this.type) {
         "text" -> PlainText(dataMap["text"] ?: "")
         "face" -> dataMap["id"]?.toInt()?.let { Face(it) } ?: MSG_EMPTY
-        "image" -> {
-            return try {
-                withContext(Dispatchers.IO) {
-                    URL(dataMap["file"] ?: "").openConnection().getInputStream().uploadAsImage(contact)
-                }
-            } catch (e: Exception) {
-                MSG_EMPTY
+        "image" -> try {
+            withContext(Dispatchers.IO) {
+                val img = URL(dataMap["url"] ?: dataMap["file"]
+                ?: "").openConnection().getInputStream().uploadAsImage(contact)
+                if (dataMap["type"] == "flash") img.flash() else img
             }
+        } catch (e: Exception) {
+            MSG_EMPTY
         }
-        "at" -> dataMap["qq"]?.toLong()?.let { userId -> bot.getGroupOrNull(contact.id)?.getOrNull(userId)?.let { At(it) } }
-                ?: MSG_EMPTY
+        "at" -> {
+            if (dataMap["qq"] == "all")
+                AtAll
+            else
+                dataMap["qq"]?.toLong()?.let { userId -> bot.getGroupOrNull(contact.id)?.getOrNull(userId)?.let { At(it) } }
+                        ?: MSG_EMPTY
+        }
         else -> MSG_EMPTY
     }
 }
