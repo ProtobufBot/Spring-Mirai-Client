@@ -1,14 +1,27 @@
 # Spring-Mirai-Client
-可通过HTTP请求创建Mirai QQ机器人，处理登陆验证码、URL等信息
 
-本项目(client端)使用 Kotlin 编写（因为 Mirai 是 kotlin 的）
+用于收发QQ消息，并通过 websocket + protobuf 上报给 server 进行处理。
 
-server 端：可使用任意语言编写
+本项目对应前端：https://github.com/protobufbot/spring-mirai-client-ui
 
-通信协议：https://github.com/lz1998/onebot/tree/master/v11/specs/idl
+server端可以使用任意语言编写，通信协议：https://github.com/lz1998/onebot_idl
 
-## TODO
-- 整合 onebot 协议，与远程服务器通过 http/websocket/rpc 方式进行通信
-- 群/私聊 消息事件 -> protobuf/json
-- 接受API调用，执行并返回结果
+Java/Kotlin用户推荐使用 [spring-boot-starter](https://github.com/protobufbot/pbbot-spring-boot-starter)
 
+支持发送的消息：文字、表情、图片、闪照、atQQ、atAll
+
+## 使用说明
+
+下载release：https://github.com/ProtobufBot/Spring-Mirai-Client/releases
+
+解压后运行
+```bash
+java -jar spring-mirai-client-版本.jar
+```
+
+浏览器打开 http://localhost:9000/
+
+创建机器人并处理下方验证码（图形验证码或设备锁）
+
+
+![截图](https://github.com/lz1998/Spring-Mirai-Client/blob/master/screenshot/client.jpg?raw=true)

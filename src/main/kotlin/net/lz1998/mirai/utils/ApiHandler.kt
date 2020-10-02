@@ -1,6 +1,5 @@
 package net.lz1998.mirai.utils
 
-import com.google.protobuf.Message
 import net.lz1998.mirai.ext.messageSourceLru
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.MemberPermission
@@ -9,30 +8,8 @@ import net.mamoe.mirai.getGroupOrNull
 import net.mamoe.mirai.message.data.asMessageChain
 import onebot.OnebotApi
 
-// 处理 server 发过来的API，执行并返回结果
-suspend fun handleApiCall(bot: Bot, protoMessage: Message): Message? {
-    return when (protoMessage) {
-        is OnebotApi.SendPrivateMsgReq -> handleSendPrivateMsgReq(bot, protoMessage)
-        is OnebotApi.SendGroupMsgReq -> handleSendGroupMsgReq(bot, protoMessage)
-        is OnebotApi.SendMsgReq -> handleSendMsgReq(bot, protoMessage)
-        is OnebotApi.DeleteMsgReq -> handleDeleteMsg(bot, protoMessage)
-        is OnebotApi.SetGroupKickReq -> handleSetGroupKick(bot, protoMessage)
-        is OnebotApi.SetGroupBanReq -> handleSetGroupBan(bot, protoMessage)
-        is OnebotApi.SetGroupWholeBanReq -> handleSetGroupWholeBan(bot, protoMessage)
-        is OnebotApi.SetGroupCardReq -> handleSetGroupCard(bot, protoMessage)
-        is OnebotApi.SetGroupNameReq -> handleSetGroupName(bot, protoMessage)
-        is OnebotApi.SetGroupLeaveReq -> handleSetGroupLeave(bot, protoMessage)
-        is OnebotApi.GetLoginInfoReq -> handleGetLoginInfo(bot, protoMessage)
-        is OnebotApi.GetFriendListReq -> handleGetFriendList(bot, protoMessage)
-        is OnebotApi.GetGroupInfoReq -> handleGetGroupInfo(bot, protoMessage)
-        is OnebotApi.GetGroupListReq -> handleGetGroupList(bot, protoMessage)
-        is OnebotApi.GetGroupMemberInfoReq -> handleGetGroupMemberInfo(bot, protoMessage)
-        is OnebotApi.GetGroupMemberListReq -> handleGetGroupMemberList(bot, protoMessage)
-        else -> null
-    }
-}
 
-suspend fun handleSendPrivateMsgReq(bot: Bot, req: OnebotApi.SendPrivateMsgReq): OnebotApi.SendPrivateMsgResp? {
+suspend fun handleSendPrivateMsg(bot: Bot, req: OnebotApi.SendPrivateMsgReq): OnebotApi.SendPrivateMsgResp? {
     val contact = bot.getFriendOrNull(req.userId) ?: return null
     val messageChain = req.messageList.map { it.toMiraiMessage(bot, contact) }.asMessageChain()
     val messageSource = contact.sendMessage(messageChain).source
@@ -40,7 +17,7 @@ suspend fun handleSendPrivateMsgReq(bot: Bot, req: OnebotApi.SendPrivateMsgReq):
     return OnebotApi.SendPrivateMsgResp.newBuilder().setMessageId(messageSource.id).build()
 }
 
-suspend fun handleSendGroupMsgReq(bot: Bot, req: OnebotApi.SendGroupMsgReq): OnebotApi.SendGroupMsgResp? {
+suspend fun handleSendGroupMsg(bot: Bot, req: OnebotApi.SendGroupMsgReq): OnebotApi.SendGroupMsgResp? {
     val contact = bot.getGroupOrNull(req.groupId) ?: return null
     val messageChain = req.messageList.map { it.toMiraiMessage(bot, contact) }.asMessageChain()
     val messageSource = contact.sendMessage(messageChain).source

@@ -1,57 +1,40 @@
 package net.lz1998.mirai.controller
 
-import kotlinx.coroutines.runBlocking
+import dto.HttpDto
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.lz1998.mirai.service.BotService
-import net.lz1998.mirai.service.LoginDataType
-import net.lz1998.mirai.service.myLoginSolver
+import net.lz1998.mirai.service.MyLoginSolver
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.MediaType
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
+@RequestMapping("/bot")
 class BotController {
 
     @Autowired
     lateinit var botService: BotService
 
 
-    @RequestMapping("/createBot")
-    fun createBot(botId: Long, password: String): String {
-        println(botId)
-        println(password)
-        runBlocking { // TODO 是否可以优化？ suspend报错怎么解决？
-            botService.createBot(botId, password)
-        }
-        return "ok"
+    // 创建一个机器人并登陆
+    @RequestMapping("/create/v1", produces = ["application/x-protobuf"], consumes = ["application/x-protobuf"])
+    fun createBot(@RequestBody param: HttpDto.CreateBotReq): HttpDto.CreateBotResp {
+        GlobalScope.launch { botService.createBot(param.botId, param.password) }
+        return HttpDto.CreateBotResp.newBuilder().build()
     }
 
-    // 通过轮询获取登陆验证url
-    @RequestMapping("/getLoginUrl")
-    fun getLoginUrl(botId: Long): String? {
-        val loginData = myLoginSolver.getLoginData(botId) ?: return null
-        return if (loginData.type != LoginDataType.PIC_CAPTCHA) {
-            loginData.url
-        } else {
-            null
-        }
+    @RequestMapping("/list/v1", produces = ["application/x-protobuf"], consumes = ["application/x-protobuf"])
+    fun listBot(): HttpDto.ListBotResp {
+        val botList = botService.listBot()
+        return HttpDto.ListBotResp.newBuilder().addAllBotList(botList).build()
     }
 
-    // 通过轮询获取登陆图片验证码
-    @RequestMapping("/getLoginImage", produces = [MediaType.IMAGE_JPEG_VALUE])
-    fun getLoginData(botId: Long): ByteArray? {
-        val loginData = myLoginSolver.getLoginData(botId) ?: return null
-        return if (loginData.type == LoginDataType.PIC_CAPTCHA) {
-            loginData.data
-        } else {
-            null
+    @RequestMapping("/login/v1", produces = ["application/x-protobuf"], consumes = ["application/x-protobuf"])
+    fun botLoginAsync(@RequestBody param: HttpDto.BotLoginAsyncReq): HttpDto.BotLoginAsyncResp {
+        GlobalScope.launch {
+            botService.botLogin(param.botId)
         }
+        return HttpDto.BotLoginAsyncResp.newBuilder().build()
     }
 
-    // 处理登陆
-    @RequestMapping("/solveLogin")
-    fun solveLogin(botId: Long, result: String): String {
-        myLoginSolver.solveLogin(botId, result)
-        return "ok"
-    }
 }
