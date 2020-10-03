@@ -4,6 +4,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import net.lz1998.mirai.alias.BFrame
+import net.lz1998.mirai.alias.BFrameType
 import net.lz1998.mirai.ext.friendRequestLru
 import net.lz1998.mirai.ext.groupRequestLru
 import net.lz1998.mirai.ext.messageSourceLru
@@ -20,7 +22,6 @@ import net.mamoe.mirai.message.MessageEvent
 import okhttp3.*
 import okio.ByteString
 import okio.ByteString.Companion.toByteString
-import onebot.OnebotFrame
 import java.util.concurrent.TimeUnit
 
 class WebsocketBotClient(override var botId: Long, override var password: String, wsUrl: String) : RemoteBot {
@@ -45,7 +46,7 @@ class WebsocketBotClient(override var botId: Long, override var password: String
 
         override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
             GlobalScope.launch {
-                val req = withContext(Dispatchers.IO) { OnebotFrame.Frame.parseFrom(bytes.toByteArray()) }
+                val req = withContext(Dispatchers.IO) { BFrame.parseFrom(bytes.toByteArray()) }
                 val resp = onRemoteApi(req)
                 val ok = wsClient.send(resp.toByteArray().toByteString())
                 if (!ok) {
@@ -119,30 +120,30 @@ class WebsocketBotClient(override var botId: Long, override var password: String
         bot.login()
     }
 
-    override suspend fun onRemoteApi(req: OnebotFrame.Frame): OnebotFrame.Frame {
-        val respBuilder = OnebotFrame.Frame.newBuilder()
+    override suspend fun onRemoteApi(req: BFrame): BFrame {
+        val respBuilder = BFrame.newBuilder()
         respBuilder.echo = req.echo
         respBuilder.botId = botId
-        when (req.messageType) {
-            OnebotFrame.Frame.MessageType.SendPrivateMsgReq -> respBuilder.sendPrivateMsgResp = handleSendPrivateMsg(bot, req.sendPrivateMsgReq)
-            OnebotFrame.Frame.MessageType.SendGroupMsgReq -> respBuilder.sendGroupMsgResp = handleSendGroupMsg(bot, req.sendGroupMsgReq)
-            OnebotFrame.Frame.MessageType.SendMsgReq -> respBuilder.sendMsgResp = handleSendMsgReq(bot, req.sendMsgReq)
-            OnebotFrame.Frame.MessageType.DeleteMsgReq -> respBuilder.deleteMsgResp = handleDeleteMsg(bot, req.deleteMsgReq)
-            OnebotFrame.Frame.MessageType.SetGroupKickReq -> respBuilder.setGroupKickResp = handleSetGroupKick(bot, req.setGroupKickReq)
-            OnebotFrame.Frame.MessageType.SetGroupBanReq -> respBuilder.setGroupBanResp = handleSetGroupBan(bot, req.setGroupBanReq)
-            OnebotFrame.Frame.MessageType.SetGroupWholeBanReq -> respBuilder.setGroupWholeBanResp = handleSetGroupWholeBan(bot, req.setGroupWholeBanReq)
-            OnebotFrame.Frame.MessageType.SetGroupCardReq -> respBuilder.setGroupCardResp = handleSetGroupCard(bot, req.setGroupCardReq)
-            OnebotFrame.Frame.MessageType.SetGroupNameReq -> respBuilder.setGroupNameResp = handleSetGroupName(bot, req.setGroupNameReq)
-            OnebotFrame.Frame.MessageType.SetGroupLeaveReq -> respBuilder.setGroupLeaveResp = handleSetGroupLeave(bot, req.setGroupLeaveReq)
-            OnebotFrame.Frame.MessageType.SetGroupSpecialTitleReq -> respBuilder.setGroupSpecialTitleResp = handleSetGroupSpecialTitle(bot, req.setGroupSpecialTitleReq)
-            OnebotFrame.Frame.MessageType.SetFriendAddRequestReq -> respBuilder.setFriendAddRequestResp = handleSetFriendAddRequest(bot, req.setFriendAddRequestReq)
-            OnebotFrame.Frame.MessageType.SetGroupAddRequestReq -> respBuilder.setGroupAddRequestResp = handleSetGroupAddRequest(bot, req.setGroupAddRequestReq)
-            OnebotFrame.Frame.MessageType.GetLoginInfoReq -> respBuilder.getLoginInfoResp = handleGetLoginInfo(bot, req.getLoginInfoReq)
-            OnebotFrame.Frame.MessageType.GetFriendListReq -> respBuilder.getFriendListResp = handleGetFriendList(bot, req.getFriendListReq)
-            OnebotFrame.Frame.MessageType.GetGroupInfoReq -> respBuilder.getGroupInfoResp = handleGetGroupInfo(bot, req.getGroupInfoReq)
-            OnebotFrame.Frame.MessageType.GetGroupListReq -> respBuilder.getGroupListResp = handleGetGroupList(bot, req.getGroupListReq)
-            OnebotFrame.Frame.MessageType.GetGroupMemberInfoReq -> respBuilder.getGroupMemberInfoResp = handleGetGroupMemberInfo(bot, req.getGroupMemberInfoReq)
-            OnebotFrame.Frame.MessageType.GetGroupMemberListReq -> respBuilder.getGroupMemberListResp = handleGetGroupMemberList(bot, req.getGroupMemberListReq)
+        when (req.frameType) {
+            BFrameType.SendPrivateMsgReq -> respBuilder.sendPrivateMsgResp = handleSendPrivateMsg(bot, req.sendPrivateMsgReq)
+            BFrameType.SendGroupMsgReq -> respBuilder.sendGroupMsgResp = handleSendGroupMsg(bot, req.sendGroupMsgReq)
+            BFrameType.SendMsgReq -> respBuilder.sendMsgResp = handleSendMsgReq(bot, req.sendMsgReq)
+            BFrameType.DeleteMsgReq -> respBuilder.deleteMsgResp = handleDeleteMsg(bot, req.deleteMsgReq)
+            BFrameType.SetGroupKickReq -> respBuilder.setGroupKickResp = handleSetGroupKick(bot, req.setGroupKickReq)
+            BFrameType.SetGroupBanReq -> respBuilder.setGroupBanResp = handleSetGroupBan(bot, req.setGroupBanReq)
+            BFrameType.SetGroupWholeBanReq -> respBuilder.setGroupWholeBanResp = handleSetGroupWholeBan(bot, req.setGroupWholeBanReq)
+            BFrameType.SetGroupCardReq -> respBuilder.setGroupCardResp = handleSetGroupCard(bot, req.setGroupCardReq)
+            BFrameType.SetGroupNameReq -> respBuilder.setGroupNameResp = handleSetGroupName(bot, req.setGroupNameReq)
+            BFrameType.SetGroupLeaveReq -> respBuilder.setGroupLeaveResp = handleSetGroupLeave(bot, req.setGroupLeaveReq)
+            BFrameType.SetGroupSpecialTitleReq -> respBuilder.setGroupSpecialTitleResp = handleSetGroupSpecialTitle(bot, req.setGroupSpecialTitleReq)
+            BFrameType.SetFriendAddRequestReq -> respBuilder.setFriendAddRequestResp = handleSetFriendAddRequest(bot, req.setFriendAddRequestReq)
+            BFrameType.SetGroupAddRequestReq -> respBuilder.setGroupAddRequestResp = handleSetGroupAddRequest(bot, req.setGroupAddRequestReq)
+            BFrameType.GetLoginInfoReq -> respBuilder.getLoginInfoResp = handleGetLoginInfo(bot, req.getLoginInfoReq)
+            BFrameType.GetFriendListReq -> respBuilder.getFriendListResp = handleGetFriendList(bot, req.getFriendListReq)
+            BFrameType.GetGroupInfoReq -> respBuilder.getGroupInfoResp = handleGetGroupInfo(bot, req.getGroupInfoReq)
+            BFrameType.GetGroupListReq -> respBuilder.getGroupListResp = handleGetGroupList(bot, req.getGroupListReq)
+            BFrameType.GetGroupMemberInfoReq -> respBuilder.getGroupMemberInfoResp = handleGetGroupMemberInfo(bot, req.getGroupMemberInfoReq)
+            BFrameType.GetGroupMemberListReq -> respBuilder.getGroupMemberListResp = handleGetGroupMemberList(bot, req.getGroupMemberListReq)
         }
         return respBuilder.build()
     }
