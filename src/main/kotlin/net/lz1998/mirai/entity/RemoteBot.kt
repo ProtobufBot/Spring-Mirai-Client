@@ -1,8 +1,8 @@
 package net.lz1998.mirai.entity
 
+import net.lz1998.mirai.alias.BFrame
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.BotEvent
-import onebot.OnebotFrame
 
 interface RemoteBot {
     var bot: Bot
@@ -14,7 +14,7 @@ interface RemoteBot {
     suspend fun login()
 
     // 执行并返回结果
-    suspend fun onRemoteApi(req: OnebotFrame.Frame): OnebotFrame.Frame
+    suspend fun onRemoteApi(req: BFrame): BFrame
 
     // 收到机器人事件
     fun onBotEvent(botEvent: BotEvent)

@@ -1,12 +1,11 @@
 package net.lz1998.mirai.utils
 
+import net.lz1998.mirai.alias.*
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.message.data.*
-import onebot.OnebotEvent
-import onebot.OnebotFrame
 
-fun BotEvent.toFrame(): OnebotFrame.Frame? = when (this) {
+fun BotEvent.toFrame(): BFrame? = when (this) {
     is GroupMessageEvent -> this.toProtoMessage().toProtoFrame(this.bot.id)
     is FriendMessageEvent -> this.toProtoMessage().toProtoFrame(this.bot.id)
     is MemberJoinEvent -> this.toProtoMessage().toProtoFrame(this.bot.id)
@@ -14,8 +13,8 @@ fun BotEvent.toFrame(): OnebotFrame.Frame? = when (this) {
     else -> null
 }
 
-fun GroupMessageEvent.toProtoMessage(): OnebotEvent.GroupMessageEvent {
-    val sender = OnebotEvent.GroupMessageEvent.Sender.newBuilder()
+fun GroupMessageEvent.toProtoMessage(): BGroupMessageEvent {
+    val sender = BGroupMessageSender.newBuilder()
             .setUserId(this.sender.id)
             .setNickname(this.sender.nick)
             .setCard(this.sender.nameCard)
@@ -29,7 +28,7 @@ fun GroupMessageEvent.toProtoMessage(): OnebotEvent.GroupMessageEvent {
     val rawMessage = this.message.toRawMessage()
 
     // 构造GroupMessageEvent
-    return OnebotEvent.GroupMessageEvent.newBuilder()
+    return BGroupMessageEvent.newBuilder()
             .setTime(System.currentTimeMillis())
             .setSelfId(bot.id)
             .setPostType("message")
@@ -44,8 +43,8 @@ fun GroupMessageEvent.toProtoMessage(): OnebotEvent.GroupMessageEvent {
             .build()
 }
 
-fun FriendMessageEvent.toProtoMessage(): OnebotEvent.PrivateMessageEvent {
-    val sender = OnebotEvent.PrivateMessageEvent.Sender.newBuilder()
+fun FriendMessageEvent.toProtoMessage(): BPrivateMessageEvent {
+    val sender = BPrivateMessageSender.newBuilder()
             .setUserId(this.sender.id)
             .setNickname(this.sender.nick)
 
@@ -56,7 +55,7 @@ fun FriendMessageEvent.toProtoMessage(): OnebotEvent.PrivateMessageEvent {
     val rawMessage = this.message.toRawMessage()
 
     // 构造GroupMessageEvent
-    return OnebotEvent.PrivateMessageEvent.newBuilder()
+    return BPrivateMessageEvent.newBuilder()
             .setTime(System.currentTimeMillis())
             .setSelfId(bot.id)
             .setPostType("message")
@@ -70,13 +69,13 @@ fun FriendMessageEvent.toProtoMessage(): OnebotEvent.PrivateMessageEvent {
             .build()
 }
 
-fun MemberJoinEvent.toProtoMessage(): OnebotEvent.GroupIncreaseNoticeEvent {
+fun MemberJoinEvent.toProtoMessage(): BGroupIncreaseNoticeEvent {
     val subType = when (this) {
         is MemberJoinEvent.Invite -> "invite"
         is MemberJoinEvent.Active -> "approve"
         is MemberJoinEvent.Retrieve -> "retrieve"
     }
-    return OnebotEvent.GroupIncreaseNoticeEvent.newBuilder()
+    return BGroupIncreaseNoticeEvent.newBuilder()
             .setTime(System.currentTimeMillis())
             .setSelfId(bot.id)
             .setPostType("notice")
@@ -87,7 +86,7 @@ fun MemberJoinEvent.toProtoMessage(): OnebotEvent.GroupIncreaseNoticeEvent {
             .build()
 }
 
-fun MemberLeaveEvent.toProtoMessage(): OnebotEvent.GroupDecreaseNoticeEvent {
+fun MemberLeaveEvent.toProtoMessage(): BGroupDecreaseNoticeEvent {
     val operatorId: Long
     val subType = when (this) {
         is MemberLeaveEvent.Kick -> {
@@ -99,7 +98,7 @@ fun MemberLeaveEvent.toProtoMessage(): OnebotEvent.GroupDecreaseNoticeEvent {
             "leave"
         }
     }
-    return OnebotEvent.GroupDecreaseNoticeEvent.newBuilder()
+    return BGroupDecreaseNoticeEvent.newBuilder()
             .setTime(System.currentTimeMillis())
             .setSelfId(bot.id)
             .setPostType("notice")
@@ -111,10 +110,10 @@ fun MemberLeaveEvent.toProtoMessage(): OnebotEvent.GroupDecreaseNoticeEvent {
             .build()
 }
 
-fun OnebotEvent.GroupMessageEvent.toProtoFrame(botId: Long): OnebotFrame.Frame = OnebotFrame.Frame.newBuilder().setBotId(botId).setMessageType(OnebotFrame.Frame.MessageType.GroupMessageEvent).setGroupMessageEvent(this).build()
-fun OnebotEvent.PrivateMessageEvent.toProtoFrame(botId: Long): OnebotFrame.Frame = OnebotFrame.Frame.newBuilder().setBotId(botId).setMessageType(OnebotFrame.Frame.MessageType.PrivateMessageEvent).setPrivateMessageEvent(this).build()
-fun OnebotEvent.GroupIncreaseNoticeEvent.toProtoFrame(botId: Long): OnebotFrame.Frame = OnebotFrame.Frame.newBuilder().setBotId(botId).setMessageType(OnebotFrame.Frame.MessageType.GroupIncreaseNoticeEvent).setGroupIncreaseNoticeEvent(this).build()
-fun OnebotEvent.GroupDecreaseNoticeEvent.toProtoFrame(botId: Long): OnebotFrame.Frame = OnebotFrame.Frame.newBuilder().setBotId(botId).setMessageType(OnebotFrame.Frame.MessageType.GroupDecreaseNoticeEvent).setGroupDecreaseNoticeEvent(this).build()
+fun BGroupMessageEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.GroupMessageEvent).setGroupMessageEvent(this).build()
+fun BPrivateMessageEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.PrivateMessageEvent).setPrivateMessageEvent(this).build()
+fun BGroupIncreaseNoticeEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.GroupIncreaseNoticeEvent).setGroupIncreaseNoticeEvent(this).build()
+fun BGroupDecreaseNoticeEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.GroupDecreaseNoticeEvent).setGroupDecreaseNoticeEvent(this).build()
 
 
 

@@ -1,0 +1,17 @@
+package net.lz1998.mirai.alias
+
+import onebot.OnebotEvent
+
+typealias BPrivateMessageEvent = OnebotEvent.PrivateMessageEvent
+typealias BGroupMessageEvent = OnebotEvent.GroupMessageEvent
+typealias BGroupDecreaseNoticeEvent = OnebotEvent.GroupDecreaseNoticeEvent
+typealias BGroupIncreaseNoticeEvent = OnebotEvent.GroupIncreaseNoticeEvent
+typealias BGroupUploadNoticeEvent = OnebotEvent.GroupUploadNoticeEvent
+typealias BGroupAdminNoticeEvent = OnebotEvent.GroupAdminNoticeEvent
+typealias BGroupBanNoticeEvent = OnebotEvent.GroupBanNoticeEvent
+typealias BFriendAddNoticeEvent = OnebotEvent.FriendAddNoticeEvent
+typealias BFriendRequestEvent = OnebotEvent.FriendRequestEvent
+typealias BGroupRequestEvent = OnebotEvent.GroupRequestEvent
+
+typealias BGroupMessageSender = OnebotEvent.GroupMessageEvent.Sender
+typealias BPrivateMessageSender = OnebotEvent.PrivateMessageEvent.Sender

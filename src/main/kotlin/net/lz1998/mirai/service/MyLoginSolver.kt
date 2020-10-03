@@ -5,7 +5,6 @@ import dto.HttpDto
 import kotlinx.coroutines.CompletableDeferred
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.utils.LoginSolver
-import okio.ByteString.Companion.toByteString
 import org.springframework.stereotype.Service
 
 @Service
