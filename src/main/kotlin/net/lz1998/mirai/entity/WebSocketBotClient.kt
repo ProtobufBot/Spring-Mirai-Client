@@ -4,6 +4,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import net.lz1998.mirai.ext.friendRequestLru
+import net.lz1998.mirai.ext.groupRequestLru
 import net.lz1998.mirai.ext.messageSourceLru
 import net.lz1998.mirai.service.MyLoginSolver
 import net.lz1998.mirai.utils.*
@@ -11,6 +13,8 @@ import net.lz1998.mirai.utils.toFrame
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.event.events.BotEvent
+import net.mamoe.mirai.event.events.MemberJoinRequestEvent
+import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.message.MessageEvent
 import okhttp3.*
@@ -103,6 +107,12 @@ class WebsocketBotClient(override var botId: Long, override var password: String
             val messageSource = this.source // 撤回消息用
             bot.messageSourceLru.put(messageSource.id, messageSource)
         }
+        bot.subscribeAlways<MemberJoinRequestEvent> {
+            bot.groupRequestLru.put(it.eventId, it)
+        }
+        bot.subscribeAlways<NewFriendRequestEvent> {
+            bot.friendRequestLru.put(it.eventId, it)
+        }
     }
 
     override suspend fun login() {
@@ -125,6 +135,8 @@ class WebsocketBotClient(override var botId: Long, override var password: String
             OnebotFrame.Frame.MessageType.SetGroupNameReq -> respBuilder.setGroupNameResp = handleSetGroupName(bot, req.setGroupNameReq)
             OnebotFrame.Frame.MessageType.SetGroupLeaveReq -> respBuilder.setGroupLeaveResp = handleSetGroupLeave(bot, req.setGroupLeaveReq)
             OnebotFrame.Frame.MessageType.SetGroupSpecialTitleReq -> respBuilder.setGroupSpecialTitleResp = handleSetGroupSpecialTitle(bot, req.setGroupSpecialTitleReq)
+            OnebotFrame.Frame.MessageType.SetFriendAddRequestReq -> respBuilder.setFriendAddRequestResp = handleSetFriendAddRequest(bot, req.setFriendAddRequestReq)
+            OnebotFrame.Frame.MessageType.SetGroupAddRequestReq -> respBuilder.setGroupAddRequestResp = handleSetGroupAddRequest(bot, req.setGroupAddRequestReq)
             OnebotFrame.Frame.MessageType.GetLoginInfoReq -> respBuilder.getLoginInfoResp = handleGetLoginInfo(bot, req.getLoginInfoReq)
             OnebotFrame.Frame.MessageType.GetFriendListReq -> respBuilder.getFriendListResp = handleGetFriendList(bot, req.getFriendListReq)
             OnebotFrame.Frame.MessageType.GetGroupInfoReq -> respBuilder.getGroupInfoResp = handleGetGroupInfo(bot, req.getGroupInfoReq)
