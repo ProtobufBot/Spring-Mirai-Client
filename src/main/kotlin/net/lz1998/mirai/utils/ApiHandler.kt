@@ -1,5 +1,7 @@
 package net.lz1998.mirai.utils
 
+import net.lz1998.mirai.ext.friendRequestLru
+import net.lz1998.mirai.ext.groupRequestLru
 import net.lz1998.mirai.ext.messageSourceLru
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.MemberPermission
@@ -100,7 +102,21 @@ suspend fun handleSetGroupSpecialTitle(bot: Bot, req: OnebotApi.SetGroupSpecialT
     return OnebotApi.SetGroupSpecialTitleResp.newBuilder().build()
 }
 
-// TODO 处理好友/群请求
+suspend fun handleSetFriendAddRequest(bot: Bot, req: OnebotApi.SetFriendAddRequestReq): OnebotApi.SetFriendAddRequestResp? {
+    val approve = req.approve
+    val flag = req.flag
+    val request = bot.friendRequestLru[flag.toLongOrNull()] ?: return null
+    if (approve) request.accept() else request.reject()
+    return OnebotApi.SetFriendAddRequestResp.newBuilder().build()
+}
+
+suspend fun handleSetGroupAddRequest(bot: Bot, req: OnebotApi.SetGroupAddRequestReq): OnebotApi.SetGroupAddRequestResp? {
+    val approve = req.approve
+    val flag = req.flag
+    val request = bot.groupRequestLru[flag.toLongOrNull()] ?: return null
+    if (approve) request.accept() else request.reject()
+    return OnebotApi.SetGroupAddRequestResp.newBuilder().build()
+}
 
 suspend fun handleGetLoginInfo(bot: Bot, req: OnebotApi.GetLoginInfoReq): OnebotApi.GetLoginInfoResp {
     return OnebotApi.GetLoginInfoResp.newBuilder().setUserId(bot.id).setNickname(bot.nick).build()
