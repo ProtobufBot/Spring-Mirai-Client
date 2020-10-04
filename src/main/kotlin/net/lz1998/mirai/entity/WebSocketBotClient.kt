@@ -124,6 +124,7 @@ class WebsocketBotClient(override var botId: Long, override var password: String
         val respBuilder = BFrame.newBuilder()
         respBuilder.echo = req.echo
         respBuilder.botId = botId
+        respBuilder.ok = true
         when (req.frameType) {
             BFrameType.SendPrivateMsgReq -> respBuilder.sendPrivateMsgResp = handleSendPrivateMsg(bot, req.sendPrivateMsgReq)
             BFrameType.SendGroupMsgReq -> respBuilder.sendGroupMsgResp = handleSendGroupMsg(bot, req.sendGroupMsgReq)
@@ -144,6 +145,7 @@ class WebsocketBotClient(override var botId: Long, override var password: String
             BFrameType.GetGroupListReq -> respBuilder.getGroupListResp = handleGetGroupList(bot, req.getGroupListReq)
             BFrameType.GetGroupMemberInfoReq -> respBuilder.getGroupMemberInfoResp = handleGetGroupMemberInfo(bot, req.getGroupMemberInfoReq)
             BFrameType.GetGroupMemberListReq -> respBuilder.getGroupMemberListResp = handleGetGroupMemberList(bot, req.getGroupMemberListReq)
+            else -> respBuilder.ok = false
         }
         return respBuilder.build()
     }
