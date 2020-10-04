@@ -6,6 +6,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.lz1998.mirai.alias.BFrame
 import net.lz1998.mirai.alias.BFrameType
+import net.lz1998.mirai.ext.fileStrBasedDeviceInfo
 import net.lz1998.mirai.ext.friendRequestLru
 import net.lz1998.mirai.ext.groupRequestLru
 import net.lz1998.mirai.ext.messageSourceLru
@@ -97,7 +98,7 @@ class WebsocketBotClient(override var botId: Long, override var password: String
     override suspend fun initBot() {
         wsClient = httpClient.newWebSocket(wsRequest, wsListener)
         bot = Bot(botId, password) {
-            fileBasedDeviceInfo("device.json")
+            fileStrBasedDeviceInfo("device.json")
             loginSolver = MyLoginSolver
             noNetworkLog()
         }.alsoLogin()
