@@ -6,6 +6,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.lz1998.mirai.alias.BFrame
 import net.lz1998.mirai.alias.BFrameType
+import net.lz1998.mirai.ext.fileStrBasedDeviceInfo
 import net.lz1998.mirai.ext.friendRequestLru
 import net.lz1998.mirai.ext.groupRequestLru
 import net.lz1998.mirai.ext.messageSourceLru
@@ -97,7 +98,7 @@ class WebsocketBotClient(override var botId: Long, override var password: String
     override suspend fun initBot() {
         wsClient = httpClient.newWebSocket(wsRequest, wsListener)
         bot = Bot(botId, password) {
-            fileBasedDeviceInfo("device.json")
+            fileStrBasedDeviceInfo("device.json")
             loginSolver = MyLoginSolver
             noNetworkLog()
         }.alsoLogin()
@@ -124,6 +125,7 @@ class WebsocketBotClient(override var botId: Long, override var password: String
         val respBuilder = BFrame.newBuilder()
         respBuilder.echo = req.echo
         respBuilder.botId = botId
+        respBuilder.ok = true
         when (req.frameType) {
             BFrameType.SendPrivateMsgReq -> respBuilder.sendPrivateMsgResp = handleSendPrivateMsg(bot, req.sendPrivateMsgReq)
             BFrameType.SendGroupMsgReq -> respBuilder.sendGroupMsgResp = handleSendGroupMsg(bot, req.sendGroupMsgReq)
@@ -144,11 +146,12 @@ class WebsocketBotClient(override var botId: Long, override var password: String
             BFrameType.GetGroupListReq -> respBuilder.getGroupListResp = handleGetGroupList(bot, req.getGroupListReq)
             BFrameType.GetGroupMemberInfoReq -> respBuilder.getGroupMemberInfoResp = handleGetGroupMemberInfo(bot, req.getGroupMemberInfoReq)
             BFrameType.GetGroupMemberListReq -> respBuilder.getGroupMemberListResp = handleGetGroupMemberList(bot, req.getGroupMemberListReq)
+            else -> respBuilder.ok = false
         }
         return respBuilder.build()
     }
 
-    override fun onBotEvent(botEvent: BotEvent) {
+    override suspend fun onBotEvent(botEvent: BotEvent) {
         val eventFrame = botEvent.toFrame() ?: return
         // TODO 写二进制还是json？配置
         val ok = wsClient.send(eventFrame.toByteArray().toByteString())

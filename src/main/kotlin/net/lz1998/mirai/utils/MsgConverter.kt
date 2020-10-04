@@ -43,14 +43,14 @@ fun MessageChain.toRawMessage(): String {
     return rawMessage
 }
 
-fun MessageChain.toOnebotMessage(): List<BMessage> {
+suspend fun MessageChain.toOnebotMessage(): List<BMessage> {
     val messageChain = mutableListOf<BMessage>()
     this.forEachContent { content ->
         val message = when (content) {
             is At -> BMessage.newBuilder().setType("at").putAllData(mapOf("qq" to content.target.toString())).build()
             is PlainText -> BMessage.newBuilder().setType("text").putAllData(mapOf("text" to content.content)).build()
             is Face -> BMessage.newBuilder().setType("face").putAllData(mapOf("id" to content.id.toString())).build()
-            is Image -> BMessage.newBuilder().setType("image").putAllData(mapOf("file" to content.imageId)).build()
+            is Image -> BMessage.newBuilder().setType("image").putAllData(mapOf("file" to content.queryUrl())).build()
             is Voice -> BMessage.newBuilder().setType("record").putAllData(mapOf("file" to content.fileName)).build()
             else -> BMessage.newBuilder().setType("unknown").build()
         }

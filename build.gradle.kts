@@ -21,12 +21,14 @@ plugins {
     id("org.springframework.boot") version "2.3.4.RELEASE"
     id("io.spring.dependency-management") version "1.0.10.RELEASE"
     id("com.google.protobuf") version "0.8.13"
+
+    kotlin("plugin.serialization") version "1.4.10"
     kotlin("jvm") version "1.4.0"
     kotlin("plugin.spring") version "1.4.0"
 }
 
 group = "net.lz1998"
-version = "0.0.6"
+version = "0.0.8"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 configurations {
@@ -46,6 +48,8 @@ repositories {
 }
 
 dependencies {
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0-RC2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.0-RC")
     implementation("net.mamoe:mirai-core-qqandroid:1.3.1")
     implementation("com.squareup.okhttp3:okhttp:4.8.0")
 //    implementation("com.google.protobuf:protobuf-javalite:3.8.0")
@@ -56,6 +60,7 @@ dependencies {
 //    implementation("com.googlecode.protobuf:protobuf-java-format:1.2")
 
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
@@ -76,7 +81,7 @@ protobuf {
     }
     generateProtoTasks {
         all().forEach {
-            it.builtins{
+            it.builtins {
 //                remove("java")
 //                id("java"){
 //                    option("lite")

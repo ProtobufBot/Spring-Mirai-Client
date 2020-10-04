@@ -3,3 +3,9 @@ server:
 bot:
   client:
     ws-url: "ws://localhost:8081/ws/test/"
+
+spring:
+  security:
+    user:
+      name: admin
+      password: 123456
