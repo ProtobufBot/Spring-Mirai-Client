@@ -4,7 +4,6 @@ import dto.HttpDto
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.lz1998.mirai.service.BotService
-import net.lz1998.mirai.service.MyLoginSolver
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 
