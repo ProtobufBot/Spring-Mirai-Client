@@ -17,5 +17,5 @@ interface RemoteBot {
     suspend fun onRemoteApi(req: BFrame): BFrame
 
     // 收到机器人事件
-    fun onBotEvent(botEvent: BotEvent)
+    suspend fun onBotEvent(botEvent: BotEvent)
 }

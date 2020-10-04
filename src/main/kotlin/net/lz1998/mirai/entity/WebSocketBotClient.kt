@@ -151,7 +151,7 @@ class WebsocketBotClient(override var botId: Long, override var password: String
         return respBuilder.build()
     }
 
-    override fun onBotEvent(botEvent: BotEvent) {
+    override suspend fun onBotEvent(botEvent: BotEvent) {
         val eventFrame = botEvent.toFrame() ?: return
         // TODO 写二进制还是json？配置
         val ok = wsClient.send(eventFrame.toByteArray().toByteString())

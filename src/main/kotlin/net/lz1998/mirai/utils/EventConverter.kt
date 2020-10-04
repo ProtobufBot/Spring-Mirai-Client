@@ -5,7 +5,7 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.message.data.*
 
-fun BotEvent.toFrame(): BFrame? = when (this) {
+suspend fun BotEvent.toFrame(): BFrame? = when (this) {
     is GroupMessageEvent -> this.toProtoMessage().toProtoFrame(this.bot.id)
     is FriendMessageEvent -> this.toProtoMessage().toProtoFrame(this.bot.id)
     is MemberJoinEvent -> this.toProtoMessage().toProtoFrame(this.bot.id)
@@ -13,7 +13,7 @@ fun BotEvent.toFrame(): BFrame? = when (this) {
     else -> null
 }
 
-fun GroupMessageEvent.toProtoMessage(): BGroupMessageEvent {
+suspend fun GroupMessageEvent.toProtoMessage(): BGroupMessageEvent {
     val sender = BGroupMessageSender.newBuilder()
             .setUserId(this.sender.id)
             .setNickname(this.sender.nick)
@@ -43,7 +43,7 @@ fun GroupMessageEvent.toProtoMessage(): BGroupMessageEvent {
             .build()
 }
 
-fun FriendMessageEvent.toProtoMessage(): BPrivateMessageEvent {
+suspend fun FriendMessageEvent.toProtoMessage(): BPrivateMessageEvent {
     val sender = BPrivateMessageSender.newBuilder()
             .setUserId(this.sender.id)
             .setNickname(this.sender.nick)
