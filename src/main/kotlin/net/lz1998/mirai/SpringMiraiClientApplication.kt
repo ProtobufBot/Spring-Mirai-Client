@@ -6,7 +6,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 
-@EnableWebSecurity
 @SpringBootApplication
 @EnableConfigurationProperties(ClientProperties::class)
 class SpringMiraiClientApplication
