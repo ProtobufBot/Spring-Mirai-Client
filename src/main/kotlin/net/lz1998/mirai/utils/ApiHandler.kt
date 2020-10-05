@@ -1,6 +1,7 @@
 package net.lz1998.mirai.utils
 
 import net.lz1998.mirai.alias.*
+import net.lz1998.mirai.ext.botInvitedGroupRequestLru
 import net.lz1998.mirai.ext.friendRequestLru
 import net.lz1998.mirai.ext.groupRequestLru
 import net.lz1998.mirai.ext.messageSourceLru
@@ -113,8 +114,12 @@ suspend fun handleSetFriendAddRequest(bot: Bot, req: BSetFriendAddRequestReq): B
 suspend fun handleSetGroupAddRequest(bot: Bot, req: BSetGroupAddRequestReq): BSetGroupAddRequestResp? {
     val approve = req.approve
     val flag = req.flag
-    val request = bot.groupRequestLru[flag.toLongOrNull()] ?: return null
-    if (approve) request.accept() else request.reject()
+    bot.groupRequestLru[flag.toLongOrNull()]?.let {
+        if (approve) it.accept() else it.reject()
+    }
+    bot.botInvitedGroupRequestLru[flag.toLongOrNull()]?.let {
+        if (approve) it.accept() else it.ignore()
+    }
     return BSetGroupAddRequestResp.newBuilder().build()
 }
 
