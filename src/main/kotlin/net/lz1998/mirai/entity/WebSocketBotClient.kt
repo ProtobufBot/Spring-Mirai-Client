@@ -6,16 +6,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.lz1998.mirai.alias.BFrame
 import net.lz1998.mirai.alias.BFrameType
-import net.lz1998.mirai.ext.fileStrBasedDeviceInfo
-import net.lz1998.mirai.ext.friendRequestLru
-import net.lz1998.mirai.ext.groupRequestLru
-import net.lz1998.mirai.ext.messageSourceLru
+import net.lz1998.mirai.ext.*
 import net.lz1998.mirai.service.MyLoginSolver
 import net.lz1998.mirai.utils.*
 import net.lz1998.mirai.utils.toFrame
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.event.events.BotEvent
+import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.event.subscribeAlways
@@ -111,6 +109,9 @@ class WebsocketBotClient(override var botId: Long, override var password: String
         }
         bot.subscribeAlways<MemberJoinRequestEvent> {
             bot.groupRequestLru.put(it.eventId, it)
+        }
+        bot.subscribeAlways<BotInvitedJoinGroupRequestEvent> {
+            bot.botInvitedGroupRequestLru.put(it.eventId, it)
         }
         bot.subscribeAlways<NewFriendRequestEvent> {
             bot.friendRequestLru.put(it.eventId, it)
