@@ -96,7 +96,7 @@ class WebsocketBotClient(override var botId: Long, override var password: String
     override suspend fun initBot() {
         wsClient = httpClient.newWebSocket(wsRequest, wsListener)
         bot = Bot(botId, password) {
-            fileStrBasedDeviceInfo("device.json")
+            fileStrBasedDeviceInfo("device/${botId}.json")
             loginSolver = MyLoginSolver
             noNetworkLog()
         }.alsoLogin()
