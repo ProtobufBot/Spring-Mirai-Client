@@ -189,6 +189,9 @@ fun BotConfiguration.getFileStrBasedDeviceInfoSupplier(filename: String): ((Cont
 fun File.loadStrAsDeviceInfo(json: Json, context: Context = ContextImpl()): DeviceInfo {
     if (!this.exists() || this.length() == 0L) {
         return MyDeviceInfo(context).also {
+            if (!this.parentFile.exists()) {
+                this.parentFile.mkdirs()
+            }
             this.writeText(json.encodeToString(MyDeviceInfo.serializer(), it))
         }
     }
