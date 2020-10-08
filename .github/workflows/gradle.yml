@@ -22,5 +22,14 @@ jobs:
         java-version: 1.8
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
+    - name: Checkout submodules
+      uses: textbook/git-checkout-submodule-action@master
+      with:
+        remote: true
     - name: Build with Gradle
       run: ./gradlew build
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: spring-mirai-client
+        path: build/libs/spring-mirai-client-*.jar
