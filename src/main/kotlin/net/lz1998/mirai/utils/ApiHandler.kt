@@ -134,7 +134,7 @@ suspend fun handleGetFriendList(bot: Bot, req: BGetFriendListReq): BGetFriendLis
                 .setNickname(friend.nick)
                 .build()
     }
-    return BGetFriendListResp.newBuilder().addAllFriendList(friendList).build()
+    return BGetFriendListResp.newBuilder().addAllFriend(friendList).build()
 }
 
 suspend fun handleGetGroupInfo(bot: Bot, req: BGetGroupInfoReq): BGetGroupInfoResp? {
@@ -150,7 +150,7 @@ suspend fun handleGetGroupList(bot: Bot, req: BGetGroupListReq): BGetGroupListRe
                 .setMemberCount(group.members.size + 1)
                 .build()
     }
-    return BGetGroupListResp.newBuilder().addAllGroupList(groupList).build()
+    return BGetGroupListResp.newBuilder().addAllGroup(groupList).build()
 }
 
 suspend fun handleGetGroupMemberInfo(bot: Bot, req: BGetGroupMemberInfoReq): BGetGroupMemberInfoResp? {
@@ -180,6 +180,6 @@ suspend fun handleGetGroupMemberList(bot: Bot, req: BGetGroupMemberListReq): BGe
                 .setCardChangeable(group.botPermission.level > MemberPermission.MEMBER.level)
                 .build()
     }
-    return BGetGroupMemberListResp.newBuilder().addAllGroupMemberList(groupMemberList).build()
+    return BGetGroupMemberListResp.newBuilder().addAllGroupMember(groupMemberList).build()
 }
 
