@@ -21,7 +21,7 @@ java -jar spring-mirai-client-版本.jar
 
 浏览器打开 http://localhost:9000/
 
-创建机器人并处理下方验证码（图形验证码或设备锁）
+创建机器人并处理下方验证码（图形验证码或设备锁），处理完**必须**输入账号和验证码（设备锁填1234），并点击提交，否则不会继续处理
 
 
 ![截图](https://github.com/lz1998/Spring-Mirai-Client/blob/master/screenshot/client.jpg?raw=true)
