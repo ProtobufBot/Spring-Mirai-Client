@@ -6,6 +6,8 @@ import net.lz1998.mirai.ext.friendRequestLru
 import net.lz1998.mirai.ext.groupRequestLru
 import net.lz1998.mirai.ext.messageSourceLru
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.Friend
+import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.getGroupOrNull
@@ -50,6 +52,50 @@ suspend fun handleDeleteMsg(bot: Bot, req: BDeleteMsgReq): BDeleteMsgResp? {
     val messageSource = bot.messageSourceLru[req.messageId] ?: return null
     bot.recall(messageSource)
     return BDeleteMsgResp.newBuilder().build()
+}
+
+suspend fun handleGetMsg(bot: Bot, req: BGetMsgReq): BGetMsgResp? {
+    val messageSource = bot.messageSourceLru[req.messageId] ?: return null
+    var messageType = "unknown"
+
+    val sender: BGetMsgSender? = when (messageSource.sender) {
+        is Bot -> {
+            messageType = "self"
+            BGetMsgSender.newBuilder()
+                    .setUserId(bot.id)
+                    .build()
+        }
+        is Friend -> {
+            messageType = "private"
+            val friend: Friend = messageSource.sender as Friend
+            BGetMsgSender.newBuilder()
+                    .setUserId(friend.id)
+                    .setNickname(friend.nick)
+                    .build()
+        }
+        is Member -> {
+            messageType = "group"
+            val member: Member = messageSource.sender as Member
+            BGetMsgSender.newBuilder()
+                    .setUserId(member.id)
+                    .setNickname(member.nick)
+                    .setCard(member.nameCard)
+                    .setRole(member.permission.name)
+                    .setTitle(member.specialTitle)
+                    .build()
+        }
+        else -> null
+    }
+
+    return BGetMsgResp.newBuilder()
+            .setTime(messageSource.time)
+            .setMessageType(messageType)
+            .setMessageId(messageSource.id)
+            .setRealId(messageSource.internalId) // 不知道是什么？
+            .setSender(sender)
+            .addAllMessage(messageSource.originalMessage.toOnebotMessage())
+            .setRawMessage(messageSource.originalMessage.toRawMessage())
+            .build()
 }
 
 suspend fun handleSetGroupKick(bot: Bot, req: BSetGroupKickReq): BSetGroupKickResp? {

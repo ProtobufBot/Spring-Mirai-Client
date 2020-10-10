@@ -5,10 +5,10 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
-import net.mamoe.mirai.message.data.MessageSource
+import net.mamoe.mirai.message.data.OnlineMessageSource
 
 // 消息记录，用于撤回
-val messageLru = LRUMap<Int, MessageSource>(128, 2048)
+val messageLru = LRUMap<Int, OnlineMessageSource>(128, 2048)
 val Bot.messageSourceLru
     get() = messageLru
 

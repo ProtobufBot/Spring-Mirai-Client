@@ -98,7 +98,7 @@ class WebsocketBotClient(override var botId: Long, override var password: String
         bot = Bot(botId, password) {
             fileStrBasedDeviceInfo("device/${botId}.json")
             loginSolver = MyLoginSolver
-            noNetworkLog()
+//            noNetworkLog()
         }.alsoLogin()
         bot.subscribeAlways<BotEvent> {
             onBotEvent(this)
@@ -132,6 +132,7 @@ class WebsocketBotClient(override var botId: Long, override var password: String
             BFrameType.SendGroupMsgReq -> respBuilder.sendGroupMsgResp = handleSendGroupMsg(bot, req.sendGroupMsgReq)
             BFrameType.SendMsgReq -> respBuilder.sendMsgResp = handleSendMsgReq(bot, req.sendMsgReq)
             BFrameType.DeleteMsgReq -> respBuilder.deleteMsgResp = handleDeleteMsg(bot, req.deleteMsgReq)
+            BFrameType.GetMsgReq -> respBuilder.getMsgResp = handleGetMsg(bot, req.getMsgReq)
             BFrameType.SetGroupKickReq -> respBuilder.setGroupKickResp = handleSetGroupKick(bot, req.setGroupKickReq)
             BFrameType.SetGroupBanReq -> respBuilder.setGroupBanResp = handleSetGroupBan(bot, req.setGroupBanReq)
             BFrameType.SetGroupWholeBanReq -> respBuilder.setGroupWholeBanResp = handleSetGroupWholeBan(bot, req.setGroupWholeBanReq)

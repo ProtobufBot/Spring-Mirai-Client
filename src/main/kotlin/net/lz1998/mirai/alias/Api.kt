@@ -17,6 +17,7 @@ typealias BDeleteMsgResp = OnebotApi.DeleteMsgResp
 
 typealias BGetMsgReq = OnebotApi.GetMsgReq
 typealias BGetMsgResp = OnebotApi.GetMsgResp
+typealias BGetMsgSender = OnebotApi.GetMsgResp.Sender
 
 typealias BGetForwardMsgReq = OnebotApi.GetForwardMsgReq
 typealias BGetForwardMsgResp = OnebotApi.GetForwardMsgResp
