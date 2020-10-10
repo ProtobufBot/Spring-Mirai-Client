@@ -15,6 +15,8 @@ suspend fun BotEvent.toFrame(): BFrame? = when (this) {
     is BotInvitedJoinGroupRequestEvent -> this.toProtoMessage().toProtoFrame(this.bot.id)
     is NewFriendRequestEvent -> this.toProtoMessage().toProtoFrame(this.bot.id)
     is FriendAddEvent -> this.toProtoMessage().toProtoFrame(this.bot.id)
+    is MessageRecallEvent.GroupRecall -> this.toProtoMessage().toProtoFrame(this.bot.id)
+    is MessageRecallEvent.FriendRecall -> this.toProtoMessage().toProtoFrame(this.bot.id)
     else -> null
 }
 
@@ -185,6 +187,30 @@ fun FriendAddEvent.toProtoMessage(): BFriendAddNoticeEvent {
             .build()
 }
 
+fun MessageRecallEvent.GroupRecall.toProtoMessage(): BGroupRecallNoticeEvent {
+    return BGroupRecallNoticeEvent.newBuilder()
+            .setTime(System.currentTimeMillis())
+            .setSelfId(bot.id)
+            .setPostType("notice")
+            .setNoticeType("group_recall")
+            .setGroupId(this.group.id)
+            .setUserId(this.authorId)
+            .setOperatorId(this.operator?.id ?: 0)
+            .setMessageId(this.messageId)
+            .build()
+}
+
+fun MessageRecallEvent.FriendRecall.toProtoMessage(): BFriendRecallNoticeEvent {
+    return BFriendRecallNoticeEvent.newBuilder()
+            .setTime(System.currentTimeMillis())
+            .setSelfId(bot.id)
+            .setPostType("notice")
+            .setNoticeType("friend_recall")
+            .setUserId(this.authorId)
+            .setMessageId(this.messageId)
+            .build()
+}
+
 fun BGroupMessageEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.GroupMessageEvent).setGroupMessageEvent(this).build()
 fun BPrivateMessageEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.PrivateMessageEvent).setPrivateMessageEvent(this).build()
 fun BGroupIncreaseNoticeEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.GroupIncreaseNoticeEvent).setGroupIncreaseNoticeEvent(this).build()
@@ -192,6 +218,8 @@ fun BGroupDecreaseNoticeEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuil
 fun BGroupRequestEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.GroupRequestEvent).setGroupRequestEvent(this).build()
 fun BFriendRequestEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.FriendRequestEvent).setFriendRequestEvent(this).build()
 fun BFriendAddNoticeEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.FriendAddNoticeEvent).setFriendAddNoticeEvent(this).build()
+fun BGroupRecallNoticeEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.GroupRecallNoticeEvent).setGroupRecallNoticeEvent(this).build()
+fun BFriendRecallNoticeEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.FriendRecallNoticeEvent).setFriendRecallNoticeEvent(this).build()
 
 
 
