@@ -50,7 +50,7 @@ repositories {
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0-RC2")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.0-RC")
-    implementation("net.mamoe:mirai-core-qqandroid:1.3.1")
+    implementation("net.mamoe:mirai-core-qqandroid:1.3.2")
     implementation("com.squareup.okhttp3:okhttp:4.8.0")
 //    implementation("com.google.protobuf:protobuf-javalite:3.8.0")
 
