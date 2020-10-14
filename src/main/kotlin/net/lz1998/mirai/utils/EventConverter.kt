@@ -211,15 +211,15 @@ fun MessageRecallEvent.FriendRecall.toProtoMessage(): BFriendRecallNoticeEvent {
             .build()
 }
 
-fun BGroupMessageEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.GroupMessageEvent).setGroupMessageEvent(this).build()
-fun BPrivateMessageEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.PrivateMessageEvent).setPrivateMessageEvent(this).build()
-fun BGroupIncreaseNoticeEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.GroupIncreaseNoticeEvent).setGroupIncreaseNoticeEvent(this).build()
-fun BGroupDecreaseNoticeEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.GroupDecreaseNoticeEvent).setGroupDecreaseNoticeEvent(this).build()
-fun BGroupRequestEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.GroupRequestEvent).setGroupRequestEvent(this).build()
-fun BFriendRequestEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.FriendRequestEvent).setFriendRequestEvent(this).build()
-fun BFriendAddNoticeEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.FriendAddNoticeEvent).setFriendAddNoticeEvent(this).build()
-fun BGroupRecallNoticeEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.GroupRecallNoticeEvent).setGroupRecallNoticeEvent(this).build()
-fun BFriendRecallNoticeEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.FriendRecallNoticeEvent).setFriendRecallNoticeEvent(this).build()
+fun BGroupMessageEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.TGroupMessageEvent).setGroupMessageEvent(this).build()
+fun BPrivateMessageEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.TPrivateMessageEvent).setPrivateMessageEvent(this).build()
+fun BGroupIncreaseNoticeEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.TGroupIncreaseNoticeEvent).setGroupIncreaseNoticeEvent(this).build()
+fun BGroupDecreaseNoticeEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.TGroupDecreaseNoticeEvent).setGroupDecreaseNoticeEvent(this).build()
+fun BGroupRequestEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.TGroupRequestEvent).setGroupRequestEvent(this).build()
+fun BFriendRequestEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.TFriendRequestEvent).setFriendRequestEvent(this).build()
+fun BFriendAddNoticeEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.TFriendAddNoticeEvent).setFriendAddNoticeEvent(this).build()
+fun BGroupRecallNoticeEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.TGroupRecallNoticeEvent).setGroupRecallNoticeEvent(this).build()
+fun BFriendRecallNoticeEvent.toProtoFrame(botId: Long): BFrame = BFrame.newBuilder().setBotId(botId).setFrameType(BFrameType.TFriendRecallNoticeEvent).setFriendRecallNoticeEvent(this).build()
 
 
 

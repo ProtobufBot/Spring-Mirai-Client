@@ -128,26 +128,26 @@ class WebsocketBotClient(override var botId: Long, override var password: String
         respBuilder.botId = botId
         respBuilder.ok = true
         when (req.frameType) {
-            BFrameType.SendPrivateMsgReq -> {respBuilder.frameType = BFrameType.SendPrivateMsgResp; respBuilder.sendPrivateMsgResp = handleSendPrivateMsg(bot, req.sendPrivateMsgReq)}
-            BFrameType.SendGroupMsgReq -> {respBuilder.frameType = BFrameType.SendGroupMsgResp; respBuilder.sendGroupMsgResp = handleSendGroupMsg(bot, req.sendGroupMsgReq)}
-            BFrameType.SendMsgReq -> {respBuilder.frameType = BFrameType.SendMsgResp; respBuilder.sendMsgResp = handleSendMsgReq(bot, req.sendMsgReq)}
-            BFrameType.DeleteMsgReq -> {respBuilder.frameType = BFrameType.DeleteMsgResp; respBuilder.deleteMsgResp = handleDeleteMsg(bot, req.deleteMsgReq)}
-            BFrameType.GetMsgReq -> {respBuilder.frameType = BFrameType.GetMsgResp; respBuilder.getMsgResp = handleGetMsg(bot, req.getMsgReq)}
-            BFrameType.SetGroupKickReq -> {respBuilder.frameType = BFrameType.SetGroupKickResp; respBuilder.setGroupKickResp = handleSetGroupKick(bot, req.setGroupKickReq)}
-            BFrameType.SetGroupBanReq -> {respBuilder.frameType = BFrameType.SetGroupBanResp; respBuilder.setGroupBanResp = handleSetGroupBan(bot, req.setGroupBanReq)}
-            BFrameType.SetGroupWholeBanReq -> {respBuilder.frameType = BFrameType.SetGroupWholeBanResp; respBuilder.setGroupWholeBanResp = handleSetGroupWholeBan(bot, req.setGroupWholeBanReq)}
-            BFrameType.SetGroupCardReq -> {respBuilder.frameType = BFrameType.SetGroupCardResp; respBuilder.setGroupCardResp = handleSetGroupCard(bot, req.setGroupCardReq)}
-            BFrameType.SetGroupNameReq -> {respBuilder.frameType = BFrameType.SetGroupNameResp; respBuilder.setGroupNameResp = handleSetGroupName(bot, req.setGroupNameReq)}
-            BFrameType.SetGroupLeaveReq -> {respBuilder.frameType = BFrameType.SetGroupLeaveResp; respBuilder.setGroupLeaveResp = handleSetGroupLeave(bot, req.setGroupLeaveReq)}
-            BFrameType.SetGroupSpecialTitleReq -> {respBuilder.frameType = BFrameType.SetGroupSpecialTitleResp; respBuilder.setGroupSpecialTitleResp = handleSetGroupSpecialTitle(bot, req.setGroupSpecialTitleReq)}
-            BFrameType.SetFriendAddRequestReq -> {respBuilder.frameType = BFrameType.SetFriendAddRequestResp; respBuilder.setFriendAddRequestResp = handleSetFriendAddRequest(bot, req.setFriendAddRequestReq)}
-            BFrameType.SetGroupAddRequestReq -> {respBuilder.frameType = BFrameType.SetGroupAddRequestResp; respBuilder.setGroupAddRequestResp = handleSetGroupAddRequest(bot, req.setGroupAddRequestReq)}
-            BFrameType.GetLoginInfoReq -> {respBuilder.frameType = BFrameType.GetLoginInfoResp; respBuilder.getLoginInfoResp = handleGetLoginInfo(bot, req.getLoginInfoReq)}
-            BFrameType.GetFriendListReq -> {respBuilder.frameType = BFrameType.GetFriendListResp; respBuilder.getFriendListResp = handleGetFriendList(bot, req.getFriendListReq)}
-            BFrameType.GetGroupInfoReq -> {respBuilder.frameType = BFrameType.GetGroupInfoResp; respBuilder.getGroupInfoResp = handleGetGroupInfo(bot, req.getGroupInfoReq)}
-            BFrameType.GetGroupListReq -> {respBuilder.frameType = BFrameType.GetGroupListResp; respBuilder.getGroupListResp = handleGetGroupList(bot, req.getGroupListReq)}
-            BFrameType.GetGroupMemberInfoReq -> {respBuilder.frameType = BFrameType.GetGroupMemberInfoResp; respBuilder.getGroupMemberInfoResp = handleGetGroupMemberInfo(bot, req.getGroupMemberInfoReq)}
-            BFrameType.GetGroupMemberListReq -> {respBuilder.frameType = BFrameType.GetGroupMemberListResp; respBuilder.getGroupMemberListResp = handleGetGroupMemberList(bot, req.getGroupMemberListReq)}
+            BFrameType.TSendPrivateMsgReq -> {respBuilder.frameType = BFrameType.TSendPrivateMsgResp; respBuilder.sendPrivateMsgResp = handleSendPrivateMsg(bot, req.sendPrivateMsgReq)}
+            BFrameType.TSendGroupMsgReq -> {respBuilder.frameType = BFrameType.TSendGroupMsgResp; respBuilder.sendGroupMsgResp = handleSendGroupMsg(bot, req.sendGroupMsgReq)}
+            BFrameType.TSendMsgReq -> {respBuilder.frameType = BFrameType.TSendMsgResp; respBuilder.sendMsgResp = handleSendMsgReq(bot, req.sendMsgReq)}
+            BFrameType.TDeleteMsgReq -> {respBuilder.frameType = BFrameType.TDeleteMsgResp; respBuilder.deleteMsgResp = handleDeleteMsg(bot, req.deleteMsgReq)}
+            BFrameType.TGetMsgReq -> {respBuilder.frameType = BFrameType.TGetMsgResp; respBuilder.getMsgResp = handleGetMsg(bot, req.getMsgReq)}
+            BFrameType.TSetGroupKickReq -> {respBuilder.frameType = BFrameType.TSetGroupKickResp; respBuilder.setGroupKickResp = handleSetGroupKick(bot, req.setGroupKickReq)}
+            BFrameType.TSetGroupBanReq -> {respBuilder.frameType = BFrameType.TSetGroupBanResp; respBuilder.setGroupBanResp = handleSetGroupBan(bot, req.setGroupBanReq)}
+            BFrameType.TSetGroupWholeBanReq -> {respBuilder.frameType = BFrameType.TSetGroupWholeBanResp; respBuilder.setGroupWholeBanResp = handleSetGroupWholeBan(bot, req.setGroupWholeBanReq)}
+            BFrameType.TSetGroupCardReq -> {respBuilder.frameType = BFrameType.TSetGroupCardResp; respBuilder.setGroupCardResp = handleSetGroupCard(bot, req.setGroupCardReq)}
+            BFrameType.TSetGroupNameReq -> {respBuilder.frameType = BFrameType.TSetGroupNameResp; respBuilder.setGroupNameResp = handleSetGroupName(bot, req.setGroupNameReq)}
+            BFrameType.TSetGroupLeaveReq -> {respBuilder.frameType = BFrameType.TSetGroupLeaveResp; respBuilder.setGroupLeaveResp = handleSetGroupLeave(bot, req.setGroupLeaveReq)}
+            BFrameType.TSetGroupSpecialTitleReq -> {respBuilder.frameType = BFrameType.TSetGroupSpecialTitleResp; respBuilder.setGroupSpecialTitleResp = handleSetGroupSpecialTitle(bot, req.setGroupSpecialTitleReq)}
+            BFrameType.TSetFriendAddRequestReq -> {respBuilder.frameType = BFrameType.TSetFriendAddRequestResp; respBuilder.setFriendAddRequestResp = handleSetFriendAddRequest(bot, req.setFriendAddRequestReq)}
+            BFrameType.TSetGroupAddRequestReq -> {respBuilder.frameType = BFrameType.TSetGroupAddRequestResp; respBuilder.setGroupAddRequestResp = handleSetGroupAddRequest(bot, req.setGroupAddRequestReq)}
+            BFrameType.TGetLoginInfoReq -> {respBuilder.frameType = BFrameType.TGetLoginInfoResp; respBuilder.getLoginInfoResp = handleGetLoginInfo(bot, req.getLoginInfoReq)}
+            BFrameType.TGetFriendListReq -> {respBuilder.frameType = BFrameType.TGetFriendListResp; respBuilder.getFriendListResp = handleGetFriendList(bot, req.getFriendListReq)}
+            BFrameType.TGetGroupInfoReq -> {respBuilder.frameType = BFrameType.TGetGroupInfoResp; respBuilder.getGroupInfoResp = handleGetGroupInfo(bot, req.getGroupInfoReq)}
+            BFrameType.TGetGroupListReq -> {respBuilder.frameType = BFrameType.TGetGroupListResp; respBuilder.getGroupListResp = handleGetGroupList(bot, req.getGroupListReq)}
+            BFrameType.TGetGroupMemberInfoReq -> {respBuilder.frameType = BFrameType.TGetGroupMemberInfoResp; respBuilder.getGroupMemberInfoResp = handleGetGroupMemberInfo(bot, req.getGroupMemberInfoReq)}
+            BFrameType.TGetGroupMemberListReq -> {respBuilder.frameType = BFrameType.TGetGroupMemberListResp; respBuilder.getGroupMemberListResp = handleGetGroupMemberList(bot, req.getGroupMemberListReq)}
             else -> respBuilder.ok = false
         }
         return respBuilder.build()
