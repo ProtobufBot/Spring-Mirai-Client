@@ -16,7 +16,7 @@ import net.mamoe.mirai.message.data.asMessageChain
 
 suspend fun handleSendPrivateMsg(bot: Bot, req: BSendPrivateMsgReq): BSendPrivateMsgResp? {
     val contact = bot.getFriendOrNull(req.userId) ?: return null
-    val messageChain = req.messageList.map { it.toMiraiMessage(bot, contact) }.asMessageChain()
+    val messageChain = protoMessageToMiraiMessage(req.messageList, bot, contact, req.autoEscape).asMessageChain()
     val messageSource = contact.sendMessage(messageChain).source
     bot.messageSourceLru.put(messageSource.id, messageSource)
     return BSendPrivateMsgResp.newBuilder().setMessageId(messageSource.id).build()
@@ -24,7 +24,7 @@ suspend fun handleSendPrivateMsg(bot: Bot, req: BSendPrivateMsgReq): BSendPrivat
 
 suspend fun handleSendGroupMsg(bot: Bot, req: BSendGroupMsgReq): BSendGroupMsgResp? {
     val contact = bot.getGroupOrNull(req.groupId) ?: return null
-    val messageChain = req.messageList.map { it.toMiraiMessage(bot, contact) }.asMessageChain()
+    val messageChain = protoMessageToMiraiMessage(req.messageList, bot, contact, req.autoEscape).asMessageChain()
     val messageSource = contact.sendMessage(messageChain).source
     bot.messageSourceLru.put(messageSource.id, messageSource)
     return BSendGroupMsgResp.newBuilder().setMessageId(messageSource.id).build()
@@ -42,7 +42,7 @@ suspend fun handleSendMsgReq(bot: Bot, req: BSendMsgReq): BSendMsgResp? {
             bot.getGroupOrNull(req.groupId) ?: bot.getFriendOrNull(req.userId)
         }
     } ?: return null
-    val messageChain = req.messageList.map { it.toMiraiMessage(bot, contact) }.asMessageChain()
+    val messageChain = protoMessageToMiraiMessage(req.messageList, bot, contact, req.autoEscape).asMessageChain()
     val messageSource = contact.sendMessage(messageChain).source
     bot.messageSourceLru.put(messageSource.id, messageSource)
     return BSendMsgResp.newBuilder().setMessageId(messageSource.id).build()

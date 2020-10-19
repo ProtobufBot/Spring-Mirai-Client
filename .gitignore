@@ -42,3 +42,6 @@ src/main/java/dto/
 
 ### Mac ###
 .DS_Store
+
+
+device/
