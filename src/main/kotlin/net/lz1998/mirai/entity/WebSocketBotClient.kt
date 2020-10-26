@@ -48,7 +48,7 @@ class WebsocketBotClient(override var botId: Long, override var password: String
                 val req = withContext(Dispatchers.IO) { BFrame.parseFrom(bytes.toByteArray()) }
                 val resp = onRemoteApi(req)
                 val ok = wsClient?.send(resp.toByteArray().toByteString())
-                if (!ok!!) {
+                if (ok==null || !ok) {
                     wsConnect()
                 }
             }
@@ -161,7 +161,7 @@ class WebsocketBotClient(override var botId: Long, override var password: String
         val eventFrame = botEvent.toFrame() ?: return
         // TODO 写二进制还是json？配置
         val ok = wsClient?.send(eventFrame.toByteArray().toByteString())
-        if (!ok!!) {
+        if (ok==null || !ok) {
             wsConnect()
         }
     }
