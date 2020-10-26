@@ -20,6 +20,7 @@ import net.mamoe.mirai.message.MessageEvent
 import okhttp3.*
 import okio.ByteString
 import okio.ByteString.Companion.toByteString
+import java.lang.Thread.sleep
 import java.util.concurrent.TimeUnit
 
 class WebsocketBotClient(override var botId: Long, override var password: String, wsUrl: String) : RemoteBot {
@@ -88,6 +89,7 @@ class WebsocketBotClient(override var botId: Long, override var password: String
             println("ws try connect")
             wsClient = httpClient.newWebSocket(wsRequest, wsListener)
         }
+        sleep(5000)
 //        val now = System.currentTimeMillis()
 //        if (now - lastWsConnectTime > 5000L) {
 
