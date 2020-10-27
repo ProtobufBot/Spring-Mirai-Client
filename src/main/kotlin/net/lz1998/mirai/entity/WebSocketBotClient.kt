@@ -9,7 +9,6 @@ import net.lz1998.mirai.alias.BFrameType
 import net.lz1998.mirai.ext.*
 import net.lz1998.mirai.service.MyLoginSolver
 import net.lz1998.mirai.utils.*
-import net.lz1998.mirai.utils.toFrame
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.event.events.BotEvent
@@ -21,14 +20,16 @@ import net.mamoe.mirai.message.MessageEvent
 import okhttp3.*
 import okio.ByteString
 import okio.ByteString.Companion.toByteString
+import java.lang.Thread.sleep
 import java.util.concurrent.TimeUnit
 
 class WebsocketBotClient(override var botId: Long, override var password: String, wsUrl: String) : RemoteBot {
     override lateinit var bot: Bot
 
 
-    private var lastWsConnectTime: Long = 0
-    private lateinit var wsClient: WebSocket
+//    private var lastWsConnectTime: Long = 0
+
+    private var wsClient: WebSocket? = null
     private var httpClient: OkHttpClient = OkHttpClient.Builder()
             .callTimeout(20, TimeUnit.SECONDS)
             .connectTimeout(20, TimeUnit.SECONDS)
@@ -47,11 +48,10 @@ class WebsocketBotClient(override var botId: Long, override var password: String
             GlobalScope.launch {
                 val req = withContext(Dispatchers.IO) { BFrame.parseFrom(bytes.toByteArray()) }
                 val resp = onRemoteApi(req)
-                val ok = wsClient.send(resp.toByteArray().toByteString())
-                if (!ok) {
+                val ok = wsClient?.send(resp.toByteArray().toByteString())
+                if (ok==null || !ok) {
                     wsConnect()
                 }
-
             }
             super.onMessage(webSocket, bytes)
         }
@@ -63,35 +63,45 @@ class WebsocketBotClient(override var botId: Long, override var password: String
 
         override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
             println("websocket 已关闭")
+            wsClient = null
             super.onClosed(webSocket, code, reason)
         }
 
         override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
             println("websocket正在关闭 $reason")
+            wsClient = null
             super.onClosing(webSocket, code, reason)
         }
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
             println("websocket失败${t.message}")
-            t.printStackTrace()
+            wsClient = null
+//            t.printStackTrace()
             wsConnect()
             super.onFailure(webSocket, t, response)
         }
     }
 
 
-    @Synchronized
+    //    @Synchronized
     fun wsConnect() {
-        val now = System.currentTimeMillis()
-        if (now - lastWsConnectTime > 5000L) {
+        if (wsClient == null) {
             println("ws try connect")
-            wsClient = httpClient.newWebSocket(wsRequest, wsListener)
-            lastWsConnectTime = now
+            synchronized(this) {
+                wsClient = httpClient.newWebSocket(wsRequest, wsListener)
+            }
         } else {
-            println("wait ws reconnect interval 5s")
+            return
         }
-    }
+        sleep(5000)
+//        val now = System.currentTimeMillis()
+//        if (now - lastWsConnectTime > 5000L) {
 
+//            lastWsConnectTime = now
+//        } else {
+//            println("wait ws reconnect interval 5s")
+//        }
+    }
 
     override suspend fun initBot() {
         wsClient = httpClient.newWebSocket(wsRequest, wsListener)
@@ -156,8 +166,8 @@ class WebsocketBotClient(override var botId: Long, override var password: String
     override suspend fun onBotEvent(botEvent: BotEvent) {
         val eventFrame = botEvent.toFrame() ?: return
         // TODO 写二进制还是json？配置
-        val ok = wsClient.send(eventFrame.toByteArray().toByteString())
-        if (!ok) {
+        val ok = wsClient?.send(eventFrame.toByteArray().toByteString())
+        if (ok==null || !ok) {
             wsConnect()
         }
     }
