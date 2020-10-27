@@ -76,18 +76,21 @@ class WebsocketBotClient(override var botId: Long, override var password: String
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
             println("websocket失败${t.message}")
             wsClient = null
-            t.printStackTrace()
+//            t.printStackTrace()
             wsConnect()
             super.onFailure(webSocket, t, response)
         }
     }
 
 
-    @Synchronized
+    //    @Synchronized
     fun wsConnect() {
         if (wsClient == null) {
             println("ws try connect")
-            wsClient = httpClient.newWebSocket(wsRequest, wsListener)
+            synchronized(this) {
+                wsClient = httpClient.newWebSocket(wsRequest, wsListener)
+            }
+        } else {
             return
         }
         sleep(5000)
