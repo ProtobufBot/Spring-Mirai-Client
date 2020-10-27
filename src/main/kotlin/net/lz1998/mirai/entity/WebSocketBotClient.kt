@@ -1,9 +1,6 @@
 package net.lz1998.mirai.entity
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import net.lz1998.mirai.alias.BFrame
 import net.lz1998.mirai.alias.BFrameType
 import net.lz1998.mirai.ext.*
@@ -18,6 +15,7 @@ import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.message.MessageEvent
 import okhttp3.*
+import okhttp3.internal.ws.WebSocketProtocol
 import okio.ByteString
 import okio.ByteString.Companion.toByteString
 import java.lang.Thread.sleep
@@ -27,7 +25,8 @@ class WebsocketBotClient(override var botId: Long, override var password: String
     override lateinit var bot: Bot
 
 
-//    private var lastWsConnectTime: Long = 0
+    private var lastWsConnectTime: Long = 0
+    var connecting: Boolean = false
 
     private var wsClient: WebSocket? = null
     private var httpClient: OkHttpClient = OkHttpClient.Builder()
@@ -49,7 +48,7 @@ class WebsocketBotClient(override var botId: Long, override var password: String
                 val req = withContext(Dispatchers.IO) { BFrame.parseFrom(bytes.toByteArray()) }
                 val resp = onRemoteApi(req)
                 val ok = wsClient?.send(resp.toByteArray().toByteString())
-                if (ok==null || !ok) {
+                if (ok == null || !ok) {
                     wsConnect()
                 }
             }
@@ -77,7 +76,11 @@ class WebsocketBotClient(override var botId: Long, override var password: String
             println("websocket失败${t.message}")
             wsClient = null
 //            t.printStackTrace()
-            wsConnect()
+            GlobalScope.launch {
+                println("10秒后重连")
+                delay(10000)
+                wsConnect()
+            }
             super.onFailure(webSocket, t, response)
         }
     }
@@ -85,22 +88,24 @@ class WebsocketBotClient(override var botId: Long, override var password: String
 
     //    @Synchronized
     fun wsConnect() {
-        if (wsClient == null) {
-            println("ws try connect")
-            synchronized(this) {
-                wsClient = httpClient.newWebSocket(wsRequest, wsListener)
-            }
-        } else {
+        if (connecting || wsClient != null) {
             return
         }
-        sleep(5000)
-//        val now = System.currentTimeMillis()
-//        if (now - lastWsConnectTime > 5000L) {
-
-//            lastWsConnectTime = now
-//        } else {
-//            println("wait ws reconnect interval 5s")
-//        }
+        val now = System.currentTimeMillis()
+        synchronized(connecting) {
+            if (connecting || now - lastWsConnectTime < 5000L) {
+                return
+            }
+            connecting = true
+            lastWsConnectTime = now
+        }
+        wsClient?.close(1001, "")
+        wsClient = null
+        println("websocket正在尝试连接")
+        wsClient = httpClient.newWebSocket(wsRequest, wsListener)
+        synchronized(connecting) {
+            connecting = false
+        }
     }
 
     override suspend fun initBot() {
@@ -138,26 +143,66 @@ class WebsocketBotClient(override var botId: Long, override var password: String
         respBuilder.botId = botId
         respBuilder.ok = true
         when (req.frameType) {
-            BFrameType.TSendPrivateMsgReq -> {respBuilder.frameType = BFrameType.TSendPrivateMsgResp; respBuilder.sendPrivateMsgResp = handleSendPrivateMsg(bot, req.sendPrivateMsgReq)}
-            BFrameType.TSendGroupMsgReq -> {respBuilder.frameType = BFrameType.TSendGroupMsgResp; respBuilder.sendGroupMsgResp = handleSendGroupMsg(bot, req.sendGroupMsgReq)}
-            BFrameType.TSendMsgReq -> {respBuilder.frameType = BFrameType.TSendMsgResp; respBuilder.sendMsgResp = handleSendMsgReq(bot, req.sendMsgReq)}
-            BFrameType.TDeleteMsgReq -> {respBuilder.frameType = BFrameType.TDeleteMsgResp; respBuilder.deleteMsgResp = handleDeleteMsg(bot, req.deleteMsgReq)}
-            BFrameType.TGetMsgReq -> {respBuilder.frameType = BFrameType.TGetMsgResp; respBuilder.getMsgResp = handleGetMsg(bot, req.getMsgReq)}
-            BFrameType.TSetGroupKickReq -> {respBuilder.frameType = BFrameType.TSetGroupKickResp; respBuilder.setGroupKickResp = handleSetGroupKick(bot, req.setGroupKickReq)}
-            BFrameType.TSetGroupBanReq -> {respBuilder.frameType = BFrameType.TSetGroupBanResp; respBuilder.setGroupBanResp = handleSetGroupBan(bot, req.setGroupBanReq)}
-            BFrameType.TSetGroupWholeBanReq -> {respBuilder.frameType = BFrameType.TSetGroupWholeBanResp; respBuilder.setGroupWholeBanResp = handleSetGroupWholeBan(bot, req.setGroupWholeBanReq)}
-            BFrameType.TSetGroupCardReq -> {respBuilder.frameType = BFrameType.TSetGroupCardResp; respBuilder.setGroupCardResp = handleSetGroupCard(bot, req.setGroupCardReq)}
-            BFrameType.TSetGroupNameReq -> {respBuilder.frameType = BFrameType.TSetGroupNameResp; respBuilder.setGroupNameResp = handleSetGroupName(bot, req.setGroupNameReq)}
-            BFrameType.TSetGroupLeaveReq -> {respBuilder.frameType = BFrameType.TSetGroupLeaveResp; respBuilder.setGroupLeaveResp = handleSetGroupLeave(bot, req.setGroupLeaveReq)}
-            BFrameType.TSetGroupSpecialTitleReq -> {respBuilder.frameType = BFrameType.TSetGroupSpecialTitleResp; respBuilder.setGroupSpecialTitleResp = handleSetGroupSpecialTitle(bot, req.setGroupSpecialTitleReq)}
-            BFrameType.TSetFriendAddRequestReq -> {respBuilder.frameType = BFrameType.TSetFriendAddRequestResp; respBuilder.setFriendAddRequestResp = handleSetFriendAddRequest(bot, req.setFriendAddRequestReq)}
-            BFrameType.TSetGroupAddRequestReq -> {respBuilder.frameType = BFrameType.TSetGroupAddRequestResp; respBuilder.setGroupAddRequestResp = handleSetGroupAddRequest(bot, req.setGroupAddRequestReq)}
-            BFrameType.TGetLoginInfoReq -> {respBuilder.frameType = BFrameType.TGetLoginInfoResp; respBuilder.getLoginInfoResp = handleGetLoginInfo(bot, req.getLoginInfoReq)}
-            BFrameType.TGetFriendListReq -> {respBuilder.frameType = BFrameType.TGetFriendListResp; respBuilder.getFriendListResp = handleGetFriendList(bot, req.getFriendListReq)}
-            BFrameType.TGetGroupInfoReq -> {respBuilder.frameType = BFrameType.TGetGroupInfoResp; respBuilder.getGroupInfoResp = handleGetGroupInfo(bot, req.getGroupInfoReq)}
-            BFrameType.TGetGroupListReq -> {respBuilder.frameType = BFrameType.TGetGroupListResp; respBuilder.getGroupListResp = handleGetGroupList(bot, req.getGroupListReq)}
-            BFrameType.TGetGroupMemberInfoReq -> {respBuilder.frameType = BFrameType.TGetGroupMemberInfoResp; respBuilder.getGroupMemberInfoResp = handleGetGroupMemberInfo(bot, req.getGroupMemberInfoReq)}
-            BFrameType.TGetGroupMemberListReq -> {respBuilder.frameType = BFrameType.TGetGroupMemberListResp; respBuilder.getGroupMemberListResp = handleGetGroupMemberList(bot, req.getGroupMemberListReq)}
+            BFrameType.TSendPrivateMsgReq -> {
+                respBuilder.frameType = BFrameType.TSendPrivateMsgResp; respBuilder.sendPrivateMsgResp = handleSendPrivateMsg(bot, req.sendPrivateMsgReq)
+            }
+            BFrameType.TSendGroupMsgReq -> {
+                respBuilder.frameType = BFrameType.TSendGroupMsgResp; respBuilder.sendGroupMsgResp = handleSendGroupMsg(bot, req.sendGroupMsgReq)
+            }
+            BFrameType.TSendMsgReq -> {
+                respBuilder.frameType = BFrameType.TSendMsgResp; respBuilder.sendMsgResp = handleSendMsgReq(bot, req.sendMsgReq)
+            }
+            BFrameType.TDeleteMsgReq -> {
+                respBuilder.frameType = BFrameType.TDeleteMsgResp; respBuilder.deleteMsgResp = handleDeleteMsg(bot, req.deleteMsgReq)
+            }
+            BFrameType.TGetMsgReq -> {
+                respBuilder.frameType = BFrameType.TGetMsgResp; respBuilder.getMsgResp = handleGetMsg(bot, req.getMsgReq)
+            }
+            BFrameType.TSetGroupKickReq -> {
+                respBuilder.frameType = BFrameType.TSetGroupKickResp; respBuilder.setGroupKickResp = handleSetGroupKick(bot, req.setGroupKickReq)
+            }
+            BFrameType.TSetGroupBanReq -> {
+                respBuilder.frameType = BFrameType.TSetGroupBanResp; respBuilder.setGroupBanResp = handleSetGroupBan(bot, req.setGroupBanReq)
+            }
+            BFrameType.TSetGroupWholeBanReq -> {
+                respBuilder.frameType = BFrameType.TSetGroupWholeBanResp; respBuilder.setGroupWholeBanResp = handleSetGroupWholeBan(bot, req.setGroupWholeBanReq)
+            }
+            BFrameType.TSetGroupCardReq -> {
+                respBuilder.frameType = BFrameType.TSetGroupCardResp; respBuilder.setGroupCardResp = handleSetGroupCard(bot, req.setGroupCardReq)
+            }
+            BFrameType.TSetGroupNameReq -> {
+                respBuilder.frameType = BFrameType.TSetGroupNameResp; respBuilder.setGroupNameResp = handleSetGroupName(bot, req.setGroupNameReq)
+            }
+            BFrameType.TSetGroupLeaveReq -> {
+                respBuilder.frameType = BFrameType.TSetGroupLeaveResp; respBuilder.setGroupLeaveResp = handleSetGroupLeave(bot, req.setGroupLeaveReq)
+            }
+            BFrameType.TSetGroupSpecialTitleReq -> {
+                respBuilder.frameType = BFrameType.TSetGroupSpecialTitleResp; respBuilder.setGroupSpecialTitleResp = handleSetGroupSpecialTitle(bot, req.setGroupSpecialTitleReq)
+            }
+            BFrameType.TSetFriendAddRequestReq -> {
+                respBuilder.frameType = BFrameType.TSetFriendAddRequestResp; respBuilder.setFriendAddRequestResp = handleSetFriendAddRequest(bot, req.setFriendAddRequestReq)
+            }
+            BFrameType.TSetGroupAddRequestReq -> {
+                respBuilder.frameType = BFrameType.TSetGroupAddRequestResp; respBuilder.setGroupAddRequestResp = handleSetGroupAddRequest(bot, req.setGroupAddRequestReq)
+            }
+            BFrameType.TGetLoginInfoReq -> {
+                respBuilder.frameType = BFrameType.TGetLoginInfoResp; respBuilder.getLoginInfoResp = handleGetLoginInfo(bot, req.getLoginInfoReq)
+            }
+            BFrameType.TGetFriendListReq -> {
+                respBuilder.frameType = BFrameType.TGetFriendListResp; respBuilder.getFriendListResp = handleGetFriendList(bot, req.getFriendListReq)
+            }
+            BFrameType.TGetGroupInfoReq -> {
+                respBuilder.frameType = BFrameType.TGetGroupInfoResp; respBuilder.getGroupInfoResp = handleGetGroupInfo(bot, req.getGroupInfoReq)
+            }
+            BFrameType.TGetGroupListReq -> {
+                respBuilder.frameType = BFrameType.TGetGroupListResp; respBuilder.getGroupListResp = handleGetGroupList(bot, req.getGroupListReq)
+            }
+            BFrameType.TGetGroupMemberInfoReq -> {
+                respBuilder.frameType = BFrameType.TGetGroupMemberInfoResp; respBuilder.getGroupMemberInfoResp = handleGetGroupMemberInfo(bot, req.getGroupMemberInfoReq)
+            }
+            BFrameType.TGetGroupMemberListReq -> {
+                respBuilder.frameType = BFrameType.TGetGroupMemberListResp; respBuilder.getGroupMemberListResp = handleGetGroupMemberList(bot, req.getGroupMemberListReq)
+            }
             else -> respBuilder.ok = false
         }
         return respBuilder.build()
@@ -167,7 +212,7 @@ class WebsocketBotClient(override var botId: Long, override var password: String
         val eventFrame = botEvent.toFrame() ?: return
         // TODO 写二进制还是json？配置
         val ok = wsClient?.send(eventFrame.toByteArray().toByteString())
-        if (ok==null || !ok) {
+        if (ok == null || !ok) {
             wsConnect()
         }
     }
