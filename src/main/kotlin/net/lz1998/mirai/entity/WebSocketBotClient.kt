@@ -88,6 +88,7 @@ class WebsocketBotClient(override var botId: Long, override var password: String
         if (wsClient == null) {
             println("ws try connect")
             wsClient = httpClient.newWebSocket(wsRequest, wsListener)
+            return
         }
         sleep(5000)
 //        val now = System.currentTimeMillis()
