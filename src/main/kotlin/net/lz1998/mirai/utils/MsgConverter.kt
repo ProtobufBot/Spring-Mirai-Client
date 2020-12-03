@@ -3,6 +3,7 @@ package net.lz1998.mirai.utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.lz1998.mirai.alias.BMessage
+import net.lz1998.mirai.ext.messageSourceLru
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
@@ -33,6 +34,7 @@ suspend fun protoMessageToMiraiMessage(msgList: List<BMessage>, bot: Bot, contac
             "at" -> messageChain.add(protoAtToMiraiAt(it.dataMap, bot, contact))
             "record" -> messageChain.add(protoVoiceToMiraiVoice(it.dataMap, contact))
             "voice" -> messageChain.add(protoVoiceToMiraiVoice(it.dataMap, contact))
+            "reply" -> messageChain.add(protoReplyToMiraiReply(it.dataMap, contact))
             else -> MSG_EMPTY
         }
     }
@@ -85,6 +87,11 @@ suspend fun protoVoiceToMiraiVoice(dataMap: Map<String, String>, contact: Contac
 
 }
 
+fun protoReplyToMiraiReply(dataMap: Map<String, String>, contact: Contact): Message {
+    val messageSource = contact.bot.messageSourceLru[dataMap["message_id"]?.toInt()] ?: return MSG_EMPTY
+    return QuoteReply(messageSource)
+}
+
 suspend fun rawMessageToMiraiMessage(str: String, bot: Bot, contact: Contact): List<Message> {
     val messageList = mutableListOf<Message>()
     var str = str
@@ -120,6 +127,7 @@ suspend fun rawMessageToMiraiMessage(str: String, bot: Bot, contact: Contact): L
                 "text" -> messageList.add(protoTextToMiraiText(dataMap))
                 "record" -> messageList.add(protoVoiceToMiraiVoice(dataMap, contact))
                 "voice" -> messageList.add(protoVoiceToMiraiVoice(dataMap, contact))
+                "reply" -> messageList.add(protoReplyToMiraiReply(dataMap, contact))
             }
         }
 
