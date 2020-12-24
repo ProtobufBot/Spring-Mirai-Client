@@ -39,8 +39,8 @@ configurations {
 
 repositories {
     mavenLocal()
-    maven(url = "http://maven.aliyun.com/nexus/content/groups/public/")
-    maven(url = "http://maven.aliyun.com/nexus/content/repositories/jcenter")
+//    maven(url = "http://maven.aliyun.com/nexus/content/groups/public/")
+//    maven(url = "http://maven.aliyun.com/nexus/content/repositories/jcenter")
     mavenCentral()
     jcenter()
 //    maven(url = "http://repo.spring.io/plugins-release")
@@ -50,7 +50,15 @@ repositories {
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0-RC2")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.0-RC")
-    implementation("net.mamoe:mirai-core-qqandroid:1.3.2")
+//    api("net.mamoe:mirai-core:2.0-M1-1")
+    implementation("net.mamoe:mirai-core-jvm:2.0-M2-dev-4") {
+        exclude("net.mamoe","mirai-core-api")
+        exclude("net.mamoe","mirai-core-utils")
+    }
+    implementation("net.mamoe:mirai-core-api-jvm:2.0-M2-dev-4") {
+        exclude("net.mamoe", "mirai-core-utils")
+    }
+    implementation("net.mamoe:mirai-core-utils-jvm:2.0-M2-dev-4")
     implementation("com.squareup.okhttp3:okhttp:4.8.0")
 //    implementation("com.google.protobuf:protobuf-javalite:3.8.0")
 

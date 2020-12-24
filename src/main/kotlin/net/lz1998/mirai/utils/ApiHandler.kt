@@ -11,46 +11,50 @@ import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.getGroupOrNull
+import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.message.data.asMessageChain
 
 
 suspend fun handleSendPrivateMsg(bot: Bot, req: BSendPrivateMsgReq): BSendPrivateMsgResp? {
-    val contact = bot.getFriendOrNull(req.userId) ?: return null
+    val contact = bot.getFriend(req.userId) ?: return null
     val messageChain = protoMessageToMiraiMessage(req.messageList, bot, contact, req.autoEscape).asMessageChain()
     val messageSource = contact.sendMessage(messageChain).source
-    bot.messageSourceLru.put(messageSource.id, messageSource)
-    return BSendPrivateMsgResp.newBuilder().setMessageId(messageSource.id).build()
+    val messageId = if (messageSource.ids.isNotEmpty()) messageSource.ids[0] else 0
+    bot.messageSourceLru.put(messageId, messageSource)
+    return BSendPrivateMsgResp.newBuilder().setMessageId(messageId).build()
 }
 
 suspend fun handleSendGroupMsg(bot: Bot, req: BSendGroupMsgReq): BSendGroupMsgResp? {
-    val contact = bot.getGroupOrNull(req.groupId) ?: return null
+    val contact = bot.getGroup(req.groupId) ?: return null
     val messageChain = protoMessageToMiraiMessage(req.messageList, bot, contact, req.autoEscape).asMessageChain()
     val messageSource = contact.sendMessage(messageChain).source
-    bot.messageSourceLru.put(messageSource.id, messageSource)
-    return BSendGroupMsgResp.newBuilder().setMessageId(messageSource.id).build()
+    val messageId = if (messageSource.ids.isNotEmpty()) messageSource.ids[0] else 0
+    bot.messageSourceLru.put(messageId, messageSource)
+    return BSendGroupMsgResp.newBuilder().setMessageId(messageId).build()
 }
 
 suspend fun handleSendMsgReq(bot: Bot, req: BSendMsgReq): BSendMsgResp? {
     val contact = when (req.messageType) {
         "group" -> {
-            bot.getGroupOrNull(req.groupId)
+            bot.getGroup(req.groupId)
         }
         "private" -> {
-            bot.getFriendOrNull(req.userId)
+            bot.getFriend(req.userId)
         }
         else -> {
-            bot.getGroupOrNull(req.groupId) ?: bot.getFriendOrNull(req.userId)
+            bot.getGroup(req.groupId) ?: bot.getFriend(req.userId)
         }
     } ?: return null
     val messageChain = protoMessageToMiraiMessage(req.messageList, bot, contact, req.autoEscape).asMessageChain()
     val messageSource = contact.sendMessage(messageChain).source
-    bot.messageSourceLru.put(messageSource.id, messageSource)
-    return BSendMsgResp.newBuilder().setMessageId(messageSource.id).build()
+    val messageId = if (messageSource.ids.isNotEmpty()) messageSource.ids[0] else 0
+    bot.messageSourceLru.put(messageId, messageSource)
+    return BSendMsgResp.newBuilder().setMessageId(messageId).build()
 }
 
 suspend fun handleDeleteMsg(bot: Bot, req: BDeleteMsgReq): BDeleteMsgResp? {
     val messageSource = bot.messageSourceLru[req.messageId] ?: return null
-    bot.recall(messageSource)
+    messageSource.recall()
     return BDeleteMsgResp.newBuilder().build()
 }
 
@@ -87,11 +91,14 @@ suspend fun handleGetMsg(bot: Bot, req: BGetMsgReq): BGetMsgResp? {
         else -> null
     }
 
+    val messageId = if (messageSource.ids.isNotEmpty()) messageSource.ids[0] else 0
+
+
     return BGetMsgResp.newBuilder()
             .setTime(messageSource.time)
             .setMessageType(messageType)
-            .setMessageId(messageSource.id)
-            .setRealId(messageSource.internalId) // 不知道是什么？
+            .setMessageId(messageId)
+            .setRealId(0) // 不知道是什么？
             .setSender(sender)
             .addAllMessage(messageSource.originalMessage.toOnebotMessage())
             .setRawMessage(messageSource.originalMessage.toRawMessage())
@@ -99,15 +106,15 @@ suspend fun handleGetMsg(bot: Bot, req: BGetMsgReq): BGetMsgResp? {
 }
 
 suspend fun handleSetGroupKick(bot: Bot, req: BSetGroupKickReq): BSetGroupKickResp? {
-    val group = bot.getGroupOrNull(req.groupId) ?: return null
-    val member = group.getOrNull(req.userId) ?: return null
+    val group = bot.getGroup(req.groupId) ?: return null
+    val member = group.get(req.userId) ?: return null
     member.kick()
     return BSetGroupKickResp.newBuilder().build()
 }
 
 suspend fun handleSetGroupBan(bot: Bot, req: BSetGroupBanReq): BSetGroupBanResp? {
-    val group = bot.getGroupOrNull(req.groupId) ?: return null
-    val member = group.getOrNull(req.userId) ?: return null
+    val group = bot.getGroup(req.groupId) ?: return null
+    val member = group.get(req.userId) ?: return null
     if (req.duration == 0) {
         member.unmute()
     } else {
@@ -117,33 +124,33 @@ suspend fun handleSetGroupBan(bot: Bot, req: BSetGroupBanReq): BSetGroupBanResp?
 }
 
 suspend fun handleSetGroupWholeBan(bot: Bot, req: BSetGroupWholeBanReq): BSetGroupWholeBanResp? {
-    val group = bot.getGroupOrNull(req.groupId) ?: return null
+    val group = bot.getGroup(req.groupId) ?: return null
     group.settings.isMuteAll = req.enable
     return BSetGroupWholeBanResp.newBuilder().build()
 }
 
 suspend fun handleSetGroupCard(bot: Bot, req: BSetGroupCardReq): BSetGroupCardResp? {
-    val group = bot.getGroupOrNull(req.groupId) ?: return null
-    val member = group.getOrNull(req.userId) ?: return null
+    val group = bot.getGroup(req.groupId) ?: return null
+    val member = group.get(req.userId) ?: return null
     member.nameCard = req.card
     return BSetGroupCardResp.newBuilder().build()
 }
 
 suspend fun handleSetGroupName(bot: Bot, req: BSetGroupNameReq): BSetGroupNameResp? {
-    val group = bot.getGroupOrNull(req.groupId) ?: return null
+    val group = bot.getGroup(req.groupId) ?: return null
     group.name = req.groupName
     return BSetGroupNameResp.newBuilder().build()
 }
 
 suspend fun handleSetGroupLeave(bot: Bot, req: BSetGroupLeaveReq): BSetGroupLeaveResp? {
-    val group = bot.getGroupOrNull(req.groupId) ?: return null
+    val group = bot.getGroup(req.groupId) ?: return null
     group.quit()
     return BSetGroupLeaveResp.newBuilder().build()
 }
 
 suspend fun handleSetGroupSpecialTitle(bot: Bot, req: BSetGroupSpecialTitleReq): BSetGroupSpecialTitleResp? {
-    val group = bot.getGroupOrNull(req.groupId) ?: return null
-    val member = group.getOrNull(req.userId) ?: return null
+    val group = bot.getGroup(req.groupId) ?: return null
+    val member = group.get(req.userId) ?: return null
     member.specialTitle = req.specialTitle
 
     return BSetGroupSpecialTitleResp.newBuilder().build()
@@ -184,7 +191,7 @@ suspend fun handleGetFriendList(bot: Bot, req: BGetFriendListReq): BGetFriendLis
 }
 
 suspend fun handleGetGroupInfo(bot: Bot, req: BGetGroupInfoReq): BGetGroupInfoResp? {
-    val group = bot.getGroupOrNull(req.groupId) ?: return null
+    val group = bot.getGroup(req.groupId) ?: return null
     return BGetGroupInfoResp.newBuilder().setGroupId(group.id).setGroupName(group.name).setMemberCount(group.members.size + 1).build()
 }
 
@@ -200,8 +207,8 @@ suspend fun handleGetGroupList(bot: Bot, req: BGetGroupListReq): BGetGroupListRe
 }
 
 suspend fun handleGetGroupMemberInfo(bot: Bot, req: BGetGroupMemberInfoReq): BGetGroupMemberInfoResp? {
-    val group = bot.getGroupOrNull(req.groupId) ?: return null
-    val member = group.getOrNull(req.userId) ?: return null
+    val group = bot.getGroup(req.groupId) ?: return null
+    val member = group.get(req.userId) ?: return null
     return BGetGroupMemberInfoResp.newBuilder()
             .setGroupId(group.id)
             .setUserId(member.id)
@@ -214,7 +221,7 @@ suspend fun handleGetGroupMemberInfo(bot: Bot, req: BGetGroupMemberInfoReq): BGe
 }
 
 suspend fun handleGetGroupMemberList(bot: Bot, req: BGetGroupMemberListReq): BGetGroupMemberListResp? {
-    val group = bot.getGroupOrNull(req.groupId) ?: return null
+    val group = bot.getGroup(req.groupId) ?: return null
     val groupMemberList = group.members.map { member ->
         BGetGroupMemberListGroupMember.newBuilder()
                 .setGroupId(group.id)

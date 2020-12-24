@@ -7,13 +7,15 @@ import net.lz1998.mirai.ext.*
 import net.lz1998.mirai.service.MyLoginSolver
 import net.lz1998.mirai.utils.*
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.event.subscribeAlways
-import net.mamoe.mirai.message.MessageEvent
+import net.mamoe.mirai.newBot
+import net.mamoe.mirai.utils.BotConfiguration
 import okhttp3.*
 import okhttp3.internal.ws.WebSocketProtocol
 import okio.ByteString
@@ -110,17 +112,20 @@ class WebsocketBotClient(override var botId: Long, override var password: String
 
     override suspend fun initBot() {
         wsClient = httpClient.newWebSocket(wsRequest, wsListener)
-        bot = Bot(botId, password) {
-            fileStrBasedDeviceInfo("device/${botId}.json")
+        bot = BotFactory.newBot(botId, password) {
+//            fileStrBasedDeviceInfo("device/${botId}.json")
+            fileBasedDeviceInfo("device/${botId}.json")
+//            protocol=BotConfiguration.MiraiProtocol.ANDROID_WATCH
             loginSolver = MyLoginSolver
 //            noNetworkLog()
         }.alsoLogin()
         bot.subscribeAlways<BotEvent> {
             onBotEvent(this)
         }
-        bot.subscribeAlways<MessageEvent> {
+        bot.subscribeAlways<net.mamoe.mirai.event.events.MessageEvent> {
             val messageSource = this.source // 撤回消息用
-            bot.messageSourceLru.put(messageSource.id, messageSource)
+            val messageId = if (messageSource.ids.isNotEmpty()) messageSource.ids[0] else 0
+            bot.messageSourceLru.put(messageId, messageSource)
         }
         bot.subscribeAlways<MemberJoinRequestEvent> {
             bot.groupRequestLru.put(it.eventId, it)

@@ -9,8 +9,9 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.getGroupOrNull
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.message.uploadAsGroupVoice
-import net.mamoe.mirai.message.uploadAsImage
+import net.mamoe.mirai.message.data.Image.Key.queryUrl
+import net.mamoe.mirai.utils.uploadAsGroupVoice
+import net.mamoe.mirai.utils.uploadAsImage
 import java.net.URL
 import javax.xml.parsers.DocumentBuilderFactory
 
