@@ -1,6 +1,7 @@
 package net.lz1998.mirai.entity
 
 import kotlinx.coroutines.*
+import kotlinx.serialization.json.Json
 import net.lz1998.mirai.alias.BFrame
 import net.lz1998.mirai.alias.BFrameType
 import net.lz1998.mirai.ext.*
@@ -8,7 +9,6 @@ import net.lz1998.mirai.service.MyLoginSolver
 import net.lz1998.mirai.utils.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotFactory
-import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
@@ -16,7 +16,16 @@ import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import okhttp3.*
 import okio.ByteString
 import okio.ByteString.Companion.toByteString
+import java.io.File
 import java.util.concurrent.TimeUnit
+
+var json: Json = runCatching {
+    Json {
+        isLenient = true
+        ignoreUnknownKeys = true
+        prettyPrint = true
+    }
+}.getOrElse { Json {} }
 
 class WebsocketBotClient(override var botId: Long, override var password: String, wsUrl: String) : RemoteBot {
     override lateinit var bot: Bot
@@ -107,13 +116,15 @@ class WebsocketBotClient(override var botId: Long, override var password: String
 
     override suspend fun initBot() {
         wsClient = httpClient.newWebSocket(wsRequest, wsListener)
+
+        val myDeviceInfo = File("device/bot-${botId}.json").loadAsMyDeviceInfo(json)
         bot = BotFactory.newBot(botId, password) {
-//            fileStrBasedDeviceInfo("device/${botId}.json")
-            fileBasedDeviceInfo("device/bot-${botId}.json")
-//            protocol=BotConfiguration.MiraiProtocol.ANDROID_WATCH
+            protocol = myDeviceInfo.protocol
+            deviceInfo = { myDeviceInfo.generateDeviceInfoData() }
             loginSolver = MyLoginSolver
-//            noNetworkLog()
-        }.alsoLogin()
+        }
+        bot.logger.info("DeviceInfo: ${json.encodeToString(MyDeviceInfo.serializer(), myDeviceInfo)}")
+
         bot.eventChannel.subscribeAlways<BotEvent> {
             onBotEvent(this)
         }
@@ -130,6 +141,9 @@ class WebsocketBotClient(override var botId: Long, override var password: String
         }
         bot.eventChannel.subscribeAlways<NewFriendRequestEvent> {
             bot.friendRequestLru.put(it.eventId, it)
+        }
+        GlobalScope.launch {
+            bot.login()
         }
     }
 

@@ -58,6 +58,7 @@ dependencies {
     implementation("net.mamoe:mirai-core-api-jvm:2.0-M2") {
         exclude("net.mamoe", "mirai-core-utils")
     }
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf-jvm:1.0.1")
     implementation("net.mamoe:mirai-core-utils-jvm:2.0-M2")
     implementation("com.squareup.okhttp3:okhttp:4.8.0")
 //    implementation("com.google.protobuf:protobuf-javalite:3.8.0")
