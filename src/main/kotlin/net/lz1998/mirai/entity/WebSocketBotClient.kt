@@ -13,14 +13,9 @@ import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
-import net.mamoe.mirai.event.subscribeAlways
-import net.mamoe.mirai.newBot
-import net.mamoe.mirai.utils.BotConfiguration
 import okhttp3.*
-import okhttp3.internal.ws.WebSocketProtocol
 import okio.ByteString
 import okio.ByteString.Companion.toByteString
-import java.lang.Thread.sleep
 import java.util.concurrent.TimeUnit
 
 class WebsocketBotClient(override var botId: Long, override var password: String, wsUrl: String) : RemoteBot {
@@ -114,26 +109,26 @@ class WebsocketBotClient(override var botId: Long, override var password: String
         wsClient = httpClient.newWebSocket(wsRequest, wsListener)
         bot = BotFactory.newBot(botId, password) {
 //            fileStrBasedDeviceInfo("device/${botId}.json")
-            fileBasedDeviceInfo("device/${botId}.json")
+            fileBasedDeviceInfo("device/bot-${botId}.json")
 //            protocol=BotConfiguration.MiraiProtocol.ANDROID_WATCH
             loginSolver = MyLoginSolver
 //            noNetworkLog()
         }.alsoLogin()
-        bot.subscribeAlways<BotEvent> {
+        bot.eventChannel.subscribeAlways<BotEvent> {
             onBotEvent(this)
         }
-        bot.subscribeAlways<net.mamoe.mirai.event.events.MessageEvent> {
+        bot.eventChannel.subscribeAlways<net.mamoe.mirai.event.events.MessageEvent> {
             val messageSource = this.source // 撤回消息用
             val messageId = if (messageSource.ids.isNotEmpty()) messageSource.ids[0] else 0
             bot.messageSourceLru.put(messageId, messageSource)
         }
-        bot.subscribeAlways<MemberJoinRequestEvent> {
+        bot.eventChannel.subscribeAlways<MemberJoinRequestEvent> {
             bot.groupRequestLru.put(it.eventId, it)
         }
-        bot.subscribeAlways<BotInvitedJoinGroupRequestEvent> {
+        bot.eventChannel.subscribeAlways<BotInvitedJoinGroupRequestEvent> {
             bot.botInvitedGroupRequestLru.put(it.eventId, it)
         }
-        bot.subscribeAlways<NewFriendRequestEvent> {
+        bot.eventChannel.subscribeAlways<NewFriendRequestEvent> {
             bot.friendRequestLru.put(it.eventId, it)
         }
     }

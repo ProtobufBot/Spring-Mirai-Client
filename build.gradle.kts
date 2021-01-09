@@ -51,14 +51,14 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.0-RC2")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.0-RC")
 //    api("net.mamoe:mirai-core:2.0-M1-1")
-    implementation("net.mamoe:mirai-core-jvm:2.0-M2-dev-4") {
+    implementation("net.mamoe:mirai-core-jvm:2.0-M2") {
         exclude("net.mamoe","mirai-core-api")
         exclude("net.mamoe","mirai-core-utils")
     }
-    implementation("net.mamoe:mirai-core-api-jvm:2.0-M2-dev-4") {
+    implementation("net.mamoe:mirai-core-api-jvm:2.0-M2") {
         exclude("net.mamoe", "mirai-core-utils")
     }
-    implementation("net.mamoe:mirai-core-utils-jvm:2.0-M2-dev-4")
+    implementation("net.mamoe:mirai-core-utils-jvm:2.0-M2")
     implementation("com.squareup.okhttp3:okhttp:4.8.0")
 //    implementation("com.google.protobuf:protobuf-javalite:3.8.0")
 

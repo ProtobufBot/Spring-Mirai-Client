@@ -9,8 +9,6 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.getFriendOrNull
-import net.mamoe.mirai.getGroupOrNull
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.message.data.asMessageChain
 
@@ -107,8 +105,8 @@ suspend fun handleGetMsg(bot: Bot, req: BGetMsgReq): BGetMsgResp? {
 
 suspend fun handleSetGroupKick(bot: Bot, req: BSetGroupKickReq): BSetGroupKickResp? {
     val group = bot.getGroup(req.groupId) ?: return null
-    val member = group.get(req.userId) ?: return null
-    member.kick()
+    val member = group[req.userId] ?: return null
+    member.kick("")
     return BSetGroupKickResp.newBuilder().build()
 }
 
