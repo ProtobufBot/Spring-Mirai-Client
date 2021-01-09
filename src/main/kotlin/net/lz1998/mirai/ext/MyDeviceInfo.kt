@@ -17,6 +17,9 @@ import kotlin.random.nextInt
  */
 public fun File.loadAsMyDeviceInfo(json: Json): MyDeviceInfo {
     if (!this.exists() || this.length() == 0L) {
+        if (!this.parentFile.exists()) {
+            this.parentFile.mkdirs()
+        }
         return MyDeviceInfo.random().also {
             this.writeText(json.encodeToString(MyDeviceInfo.serializer(), it))
         }

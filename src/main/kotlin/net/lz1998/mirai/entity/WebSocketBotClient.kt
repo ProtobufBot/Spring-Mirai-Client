@@ -112,8 +112,6 @@ class WebsocketBotClient(override var botId: Long, override var password: String
     }
 
     override suspend fun initBot() {
-        wsClient = httpClient.newWebSocket(wsRequest, wsListener)
-
         val myDeviceInfo = File("device/bot-${botId}.json").loadAsMyDeviceInfo(json)
         bot = BotFactory.newBot(botId, password) {
             protocol = myDeviceInfo.protocol
@@ -138,6 +136,11 @@ class WebsocketBotClient(override var botId: Long, override var password: String
         }
         bot.eventChannel.subscribeAlways<NewFriendRequestEvent> {
             bot.friendRequestLru.put(it.eventId, it)
+        }
+        bot.eventChannel.subscribeAlways<BotOnlineEvent> {
+            if (wsClient == null) {
+                wsClient = httpClient.newWebSocket(wsRequest, wsListener)
+            }
         }
         GlobalScope.launch {
             bot.login()
