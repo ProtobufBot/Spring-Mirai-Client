@@ -9,10 +9,7 @@ import net.lz1998.mirai.service.MyLoginSolver
 import net.lz1998.mirai.utils.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotFactory
-import net.mamoe.mirai.event.events.BotEvent
-import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
-import net.mamoe.mirai.event.events.MemberJoinRequestEvent
-import net.mamoe.mirai.event.events.NewFriendRequestEvent
+import net.mamoe.mirai.event.events.*
 import okhttp3.*
 import okio.ByteString
 import okio.ByteString.Companion.toByteString
@@ -34,7 +31,7 @@ class WebsocketBotClient(override var botId: Long, override var password: String
     private var lastWsConnectTime: Long = 0
     var connecting: Boolean = false
 
-    private var wsClient: WebSocket? = null
+    var wsClient: WebSocket? = null
     private var httpClient: OkHttpClient = OkHttpClient.Builder()
             .callTimeout(20, TimeUnit.SECONDS)
             .connectTimeout(20, TimeUnit.SECONDS)
