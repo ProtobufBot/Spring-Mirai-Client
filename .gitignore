@@ -45,3 +45,5 @@ src/main/java/dto/
 
 
 device/
+.wakatime-project
+bots.json

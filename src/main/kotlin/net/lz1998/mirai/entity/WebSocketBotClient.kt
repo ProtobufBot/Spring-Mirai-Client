@@ -1,25 +1,28 @@
 package net.lz1998.mirai.entity
 
 import kotlinx.coroutines.*
+import kotlinx.serialization.json.Json
 import net.lz1998.mirai.alias.BFrame
 import net.lz1998.mirai.alias.BFrameType
 import net.lz1998.mirai.ext.*
 import net.lz1998.mirai.service.MyLoginSolver
 import net.lz1998.mirai.utils.*
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.alsoLogin
-import net.mamoe.mirai.event.events.BotEvent
-import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
-import net.mamoe.mirai.event.events.MemberJoinRequestEvent
-import net.mamoe.mirai.event.events.NewFriendRequestEvent
-import net.mamoe.mirai.event.subscribeAlways
-import net.mamoe.mirai.message.MessageEvent
+import net.mamoe.mirai.BotFactory
+import net.mamoe.mirai.event.events.*
 import okhttp3.*
-import okhttp3.internal.ws.WebSocketProtocol
 import okio.ByteString
 import okio.ByteString.Companion.toByteString
-import java.lang.Thread.sleep
+import java.io.File
 import java.util.concurrent.TimeUnit
+
+var json: Json = runCatching {
+    Json {
+        isLenient = true
+        ignoreUnknownKeys = true
+        prettyPrint = true
+    }
+}.getOrElse { Json {} }
 
 class WebsocketBotClient(override var botId: Long, override var password: String, wsUrl: String) : RemoteBot {
     override lateinit var bot: Bot
@@ -28,7 +31,7 @@ class WebsocketBotClient(override var botId: Long, override var password: String
     private var lastWsConnectTime: Long = 0
     var connecting: Boolean = false
 
-    private var wsClient: WebSocket? = null
+    var wsClient: WebSocket? = null
     private var httpClient: OkHttpClient = OkHttpClient.Builder()
             .callTimeout(20, TimeUnit.SECONDS)
             .connectTimeout(20, TimeUnit.SECONDS)
@@ -109,27 +112,38 @@ class WebsocketBotClient(override var botId: Long, override var password: String
     }
 
     override suspend fun initBot() {
-        wsClient = httpClient.newWebSocket(wsRequest, wsListener)
-        bot = Bot(botId, password) {
-            fileStrBasedDeviceInfo("device/${botId}.json")
+        val myDeviceInfo = File("device/bot-${botId}.json").loadAsMyDeviceInfo(json)
+        bot = BotFactory.newBot(botId, password) {
+            protocol = myDeviceInfo.protocol
+            deviceInfo = { myDeviceInfo.generateDeviceInfoData() }
             loginSolver = MyLoginSolver
-//            noNetworkLog()
-        }.alsoLogin()
-        bot.subscribeAlways<BotEvent> {
+        }
+        bot.logger.info("DeviceInfo: ${json.encodeToString(MyDeviceInfo.serializer(), myDeviceInfo)}")
+
+        bot.eventChannel.subscribeAlways<BotEvent> {
             onBotEvent(this)
         }
-        bot.subscribeAlways<MessageEvent> {
+        bot.eventChannel.subscribeAlways<net.mamoe.mirai.event.events.MessageEvent> {
             val messageSource = this.source // 撤回消息用
-            bot.messageSourceLru.put(messageSource.id, messageSource)
+            val messageId = if (messageSource.ids.isNotEmpty()) messageSource.ids[0] else 0
+            bot.messageSourceLru.put(messageId, messageSource)
         }
-        bot.subscribeAlways<MemberJoinRequestEvent> {
+        bot.eventChannel.subscribeAlways<MemberJoinRequestEvent> {
             bot.groupRequestLru.put(it.eventId, it)
         }
-        bot.subscribeAlways<BotInvitedJoinGroupRequestEvent> {
+        bot.eventChannel.subscribeAlways<BotInvitedJoinGroupRequestEvent> {
             bot.botInvitedGroupRequestLru.put(it.eventId, it)
         }
-        bot.subscribeAlways<NewFriendRequestEvent> {
+        bot.eventChannel.subscribeAlways<NewFriendRequestEvent> {
             bot.friendRequestLru.put(it.eventId, it)
+        }
+        bot.eventChannel.subscribeAlways<BotOnlineEvent> {
+            if (wsClient == null) {
+                wsClient = httpClient.newWebSocket(wsRequest, wsListener)
+            }
+        }
+        GlobalScope.launch {
+            bot.login()
         }
     }
 

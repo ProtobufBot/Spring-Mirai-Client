@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service
 object MyLoginSolver : LoginSolver() {
     // TODO 通过轮询查询 loginMap
     val loginMap = mutableMapOf<Long, LoginData>()
+    override val isSliderCaptchaSupported: Boolean
+        get() = true
 
     // 图片验证码登陆
     override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String? {

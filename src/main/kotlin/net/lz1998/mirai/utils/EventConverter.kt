@@ -34,6 +34,8 @@ suspend fun GroupMessageEvent.toProtoMessage(): BGroupMessageEvent {
     // 构造rawMessage
     val rawMessage = this.message.toRawMessage()
 
+    val messageId = if (this.source.ids.isNotEmpty()) this.source.ids[0] else 0
+
     // 构造GroupMessageEvent
     return BGroupMessageEvent.newBuilder()
             .setTime(System.currentTimeMillis())
@@ -41,7 +43,7 @@ suspend fun GroupMessageEvent.toProtoMessage(): BGroupMessageEvent {
             .setPostType("message")
             .setMessageType("group")
             .setSubType("normal")
-            .setMessageId(message.id)
+            .setMessageId(messageId)
             .setGroupId(group.id)
             .setUserId(this.sender.id)
             .addAllMessage(onebotMessage)
@@ -61,6 +63,8 @@ suspend fun FriendMessageEvent.toProtoMessage(): BPrivateMessageEvent {
     // 构造rawMessage
     val rawMessage = this.message.toRawMessage()
 
+    val messageId = if (this.source.ids.isNotEmpty()) this.source.ids[0] else 0
+
     // 构造GroupMessageEvent
     return BPrivateMessageEvent.newBuilder()
             .setTime(System.currentTimeMillis())
@@ -68,7 +72,7 @@ suspend fun FriendMessageEvent.toProtoMessage(): BPrivateMessageEvent {
             .setPostType("message")
             .setMessageType("private")
             .setSubType("normal")
-            .setMessageId(message.id)
+            .setMessageId(messageId)
             .setUserId(this.sender.id)
             .addAllMessage(onebotMessage)
             .setRawMessage(rawMessage)
@@ -188,6 +192,8 @@ fun FriendAddEvent.toProtoMessage(): BFriendAddNoticeEvent {
 }
 
 fun MessageRecallEvent.GroupRecall.toProtoMessage(): BGroupRecallNoticeEvent {
+    val messageId = if (this.messageIds.isNotEmpty()) this.messageIds[0] else 0
+
     return BGroupRecallNoticeEvent.newBuilder()
             .setTime(System.currentTimeMillis())
             .setSelfId(bot.id)
@@ -196,18 +202,20 @@ fun MessageRecallEvent.GroupRecall.toProtoMessage(): BGroupRecallNoticeEvent {
             .setGroupId(this.group.id)
             .setUserId(this.authorId)
             .setOperatorId(this.operator?.id ?: 0)
-            .setMessageId(this.messageId)
+            .setMessageId(messageId)
             .build()
 }
 
 fun MessageRecallEvent.FriendRecall.toProtoMessage(): BFriendRecallNoticeEvent {
+    val messageId = if (this.messageIds.isNotEmpty()) this.messageIds[0] else 0
+
     return BFriendRecallNoticeEvent.newBuilder()
             .setTime(System.currentTimeMillis())
             .setSelfId(bot.id)
             .setPostType("notice")
             .setNoticeType("friend_recall")
             .setUserId(this.authorId)
-            .setMessageId(this.messageId)
+            .setMessageId(messageId)
             .build()
 }
 

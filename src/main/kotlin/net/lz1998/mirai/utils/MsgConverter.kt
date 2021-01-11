@@ -3,13 +3,14 @@ package net.lz1998.mirai.utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.lz1998.mirai.alias.BMessage
+import net.lz1998.mirai.ext.messageSourceLru
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.Contact.Companion.uploadImage
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.getGroupOrNull
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.message.uploadAsGroupVoice
-import net.mamoe.mirai.message.uploadAsImage
+import net.mamoe.mirai.message.data.Image.Key.queryUrl
+import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import java.net.URL
 import javax.xml.parsers.DocumentBuilderFactory
 
@@ -33,6 +34,7 @@ suspend fun protoMessageToMiraiMessage(msgList: List<BMessage>, bot: Bot, contac
             "at" -> messageChain.add(protoAtToMiraiAt(it.dataMap, bot, contact))
             "record" -> messageChain.add(protoVoiceToMiraiVoice(it.dataMap, contact))
             "voice" -> messageChain.add(protoVoiceToMiraiVoice(it.dataMap, contact))
+            "reply" -> messageChain.add(protoReplyToMiraiReply(it.dataMap, contact))
             else -> MSG_EMPTY
         }
     }
@@ -47,8 +49,8 @@ fun protoTextToMiraiText(dataMap: Map<String, String>): Message {
 suspend fun protoImageToMiraiImage(dataMap: Map<String, String>, contact: Contact): Message {
     return try {
         withContext(Dispatchers.IO) {
-            val img = URL(dataMap["url"] ?: dataMap["file"]
-            ?: "").openConnection().getInputStream().uploadAsImage(contact)
+            val img = contact.uploadImage(URL(dataMap["url"] ?: dataMap["file"]
+            ?: "").openConnection().getInputStream())
             if (dataMap["type"] == "flash") img.flash() else img
         }
     } catch (e: Exception) {
@@ -60,7 +62,7 @@ fun protoAtToMiraiAt(dataMap: Map<String, String>, bot: Bot, contact: Contact): 
     return if (dataMap["qq"] == "all")
         AtAll
     else
-        dataMap["qq"]?.toLong()?.let { userId -> bot.getGroupOrNull(contact.id)?.getOrNull(userId)?.let { At(it) } }
+        dataMap["qq"]?.toLong()?.let { userId -> bot.getGroup(contact.id)?.get(userId)?.let { At(it) } }
                 ?: MSG_EMPTY
 }
 
@@ -74,7 +76,7 @@ suspend fun protoVoiceToMiraiVoice(dataMap: Map<String, String>, contact: Contac
             val url = dataMap["url"] ?: return MSG_EMPTY
             return try {
                 withContext(Dispatchers.IO) {
-                    URL(url).openStream().uploadAsGroupVoice(contact)
+                    contact.uploadVoice(URL(url).openStream().toExternalResource())
                 }
             } catch (e: Exception) {
                 MSG_EMPTY
@@ -83,6 +85,11 @@ suspend fun protoVoiceToMiraiVoice(dataMap: Map<String, String>, contact: Contac
         else -> return MSG_EMPTY
     }
 
+}
+
+fun protoReplyToMiraiReply(dataMap: Map<String, String>, contact: Contact): Message {
+    val messageSource = contact.bot.messageSourceLru[dataMap["message_id"]?.toInt()] ?: return MSG_EMPTY
+    return QuoteReply(messageSource)
 }
 
 suspend fun rawMessageToMiraiMessage(str: String, bot: Bot, contact: Contact): List<Message> {
@@ -120,6 +127,7 @@ suspend fun rawMessageToMiraiMessage(str: String, bot: Bot, contact: Contact): L
                 "text" -> messageList.add(protoTextToMiraiText(dataMap))
                 "record" -> messageList.add(protoVoiceToMiraiVoice(dataMap, contact))
                 "voice" -> messageList.add(protoVoiceToMiraiVoice(dataMap, contact))
+                "reply" -> messageList.add(protoReplyToMiraiReply(dataMap, contact))
             }
         }
 
@@ -143,7 +151,7 @@ suspend fun MessageChain.toRawMessage(): String {
 
 suspend fun MessageChain.toOnebotMessage(): List<BMessage> {
     val messageChain = mutableListOf<BMessage>()
-    this.forEachContent { content ->
+    this.forEach { content ->
         val message = when (content) {
             is At -> BMessage.newBuilder().setType("at").putAllData(mapOf("qq" to content.target.toString())).build()
             is PlainText -> BMessage.newBuilder().setType("text").putAllData(mapOf("text" to content.content)).build()
