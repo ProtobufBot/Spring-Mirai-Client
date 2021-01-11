@@ -10,12 +10,12 @@ import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
-import net.mamoe.mirai.message.data.asMessageChain
+import net.mamoe.mirai.message.data.toMessageChain
 
 
 suspend fun handleSendPrivateMsg(bot: Bot, req: BSendPrivateMsgReq): BSendPrivateMsgResp? {
     val contact = bot.getFriend(req.userId) ?: return null
-    val messageChain = protoMessageToMiraiMessage(req.messageList, bot, contact, req.autoEscape).asMessageChain()
+    val messageChain = protoMessageToMiraiMessage(req.messageList, bot, contact, req.autoEscape).toMessageChain()
     val messageSource = contact.sendMessage(messageChain).source
     val messageId = if (messageSource.ids.isNotEmpty()) messageSource.ids[0] else 0
     bot.messageSourceLru.put(messageId, messageSource)
@@ -24,7 +24,7 @@ suspend fun handleSendPrivateMsg(bot: Bot, req: BSendPrivateMsgReq): BSendPrivat
 
 suspend fun handleSendGroupMsg(bot: Bot, req: BSendGroupMsgReq): BSendGroupMsgResp? {
     val contact = bot.getGroup(req.groupId) ?: return null
-    val messageChain = protoMessageToMiraiMessage(req.messageList, bot, contact, req.autoEscape).asMessageChain()
+    val messageChain = protoMessageToMiraiMessage(req.messageList, bot, contact, req.autoEscape).toMessageChain()
     val messageSource = contact.sendMessage(messageChain).source
     val messageId = if (messageSource.ids.isNotEmpty()) messageSource.ids[0] else 0
     bot.messageSourceLru.put(messageId, messageSource)
@@ -43,7 +43,7 @@ suspend fun handleSendMsgReq(bot: Bot, req: BSendMsgReq): BSendMsgResp? {
             bot.getGroup(req.groupId) ?: bot.getFriend(req.userId)
         }
     } ?: return null
-    val messageChain = protoMessageToMiraiMessage(req.messageList, bot, contact, req.autoEscape).asMessageChain()
+    val messageChain = protoMessageToMiraiMessage(req.messageList, bot, contact, req.autoEscape).toMessageChain()
     val messageSource = contact.sendMessage(messageChain).source
     val messageId = if (messageSource.ids.isNotEmpty()) messageSource.ids[0] else 0
     bot.messageSourceLru.put(messageId, messageSource)

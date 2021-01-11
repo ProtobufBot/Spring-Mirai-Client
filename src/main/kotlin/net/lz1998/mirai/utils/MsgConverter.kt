@@ -151,7 +151,7 @@ suspend fun MessageChain.toRawMessage(): String {
 
 suspend fun MessageChain.toOnebotMessage(): List<BMessage> {
     val messageChain = mutableListOf<BMessage>()
-    this.forEachContent { content ->
+    this.forEach { content ->
         val message = when (content) {
             is At -> BMessage.newBuilder().setType("at").putAllData(mapOf("qq" to content.target.toString())).build()
             is PlainText -> BMessage.newBuilder().setType("text").putAllData(mapOf("text" to content.content)).build()
